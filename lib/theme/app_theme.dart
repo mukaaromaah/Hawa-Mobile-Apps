@@ -16,7 +16,6 @@ class AppTheme {
       colorScheme: ColorScheme.light(
         primary: primaryGreen,
         secondary: accentGreen,
-        background: softGreen,
         surface: white,
         error: warningRed,
       ),
