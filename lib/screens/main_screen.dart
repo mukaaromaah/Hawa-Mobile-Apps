@@ -34,16 +34,10 @@ class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Hawa'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.account_circle, size: 30),
-            onPressed: () {},
-          )
-        ],
+      body: SafeArea(
+        bottom: false,
+        child: _screens[_selectedIndex],
       ),
-      body: _screens[_selectedIndex],
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           border: Border(
