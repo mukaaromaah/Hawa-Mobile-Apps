@@ -28,8 +28,9 @@ class NodesScreen extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Row(
-                  children: [
+                Expanded(
+                  child: Row(
+                    children: [
                     Stack(
                       alignment: Alignment.center,
                       children: [
@@ -57,8 +58,9 @@ class NodesScreen extends StatelessWidget {
                       ],
                     ),
                     const SizedBox(width: 12),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Row(
                           children: [
@@ -98,7 +100,9 @@ class NodesScreen extends StatelessWidget {
                         ),
                       ],
                     ),
+                    ),
                   ],
+                ),
                 ),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,

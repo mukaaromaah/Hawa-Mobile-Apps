@@ -102,7 +102,16 @@ class HomeScreen extends StatelessWidget {
               ),
               child: Stack(
                 children: [
-                  // Placeholder for the illustration
+                  // Illustration background
+                  Positioned.fill(
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(24),
+                      child: Image.asset(
+                        'assets/images/home_illustration.png',
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  ),
                   Positioned.fill(
                     child: Container(
                       decoration: BoxDecoration(
@@ -116,10 +125,6 @@ class HomeScreen extends StatelessWidget {
                           begin: Alignment.topCenter,
                           end: Alignment.bottomCenter,
                         ),
-                      ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(24),
-                        child: Icon(Icons.park, size: 200, color: AppTheme.primary.withValues(alpha: 0.05)),
                       ),
                     ),
                   ),
