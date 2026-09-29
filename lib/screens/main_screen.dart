@@ -16,6 +16,70 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
 
+  @override
+  void initState() {
+    super.initState();
+    // Simulate push notification for demo scenario ("Andi")
+    Future.delayed(const Duration(seconds: 3), () {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          behavior: SnackBarBehavior.floating,
+          margin: const EdgeInsets.only(top: 16, left: 16, right: 16, bottom: 24),
+          backgroundColor: AppTheme.errorContainer,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          elevation: 8,
+          content: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: const BoxDecoration(
+                  color: AppTheme.error,
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.notifications_active, color: Colors.white, size: 20),
+              ),
+              const SizedBox(width: 12),
+              const Expanded(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Hawa • Just Now',
+                      style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppTheme.onErrorContainer),
+                    ),
+                    SizedBox(height: 4),
+                    Text(
+                      'Zone 04 Critical Alert!',
+                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppTheme.onErrorContainer),
+                    ),
+                    SizedBox(height: 2),
+                    Text(
+                      'Rapid PM2.5 increase detected. Adaptive sensing boosted to 15s interval.',
+                      style: TextStyle(fontSize: 12, color: AppTheme.onErrorContainer),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          duration: const Duration(seconds: 8),
+          action: SnackBarAction(
+            label: 'VIEW',
+            textColor: AppTheme.error,
+            onPressed: () {
+              setState(() {
+                _selectedIndex = 2; // Jump to Alerts tab
+              });
+            },
+          ),
+        ),
+      );
+    });
+  }
+
   // Daftar halaman yang akan ditampilkan sesuai tab yang dipilih
   final List<Widget> _screens = const [
     HomeScreen(),

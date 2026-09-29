@@ -16,6 +16,11 @@ class AppTheme {
   static const Color errorContainer = Color(0xFFFFDAD6);
   static const Color onErrorContainer = Color(0xFF93000A);
   static const Color error = Color(0xFFBA1A1A);
+  
+  // Warning colors
+  static const Color warning = Color(0xFFE9A23B); // Orange
+  static const Color warningContainer = Color(0xFFFFECCC);
+  static const Color onWarningContainer = Color(0xFF5E3A00);
 
   static ThemeData get lightTheme {
     return ThemeData(

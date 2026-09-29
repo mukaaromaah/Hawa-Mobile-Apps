@@ -1,3 +1,9 @@
+enum AirQualityStatus {
+  normal,
+  warning,
+  critical,
+}
+
 class SensorData {
   final double pm1;
   final double pm25;
@@ -25,10 +31,17 @@ class SensorData {
 
   // Kategori Kualitas Udara berdasarkan PM2.5
   String get airQualityCategory {
-    if (pm25 <= 15) return 'Baik (Good)';
-    if (pm25 <= 55) return 'Sedang (Moderate)';
+    if (pm25 <= 35) return 'Baik (Good)';
+    if (pm25 <= 75) return 'Sedang (Moderate)';
     if (pm25 <= 150) return 'Tidak Sehat (Unhealthy)';
     return 'Berbahaya (Hazardous)';
+  }
+
+  // Status prioritas zona
+  AirQualityStatus get status {
+    if (pm25 > 100) return AirQualityStatus.critical;
+    if (pm25 > 35) return AirQualityStatus.warning;
+    return AirQualityStatus.normal;
   }
 
   // Arah mata angin dari derajat (0-360)

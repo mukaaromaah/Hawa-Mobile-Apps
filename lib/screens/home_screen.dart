@@ -14,11 +14,12 @@ class HomeScreen extends StatelessWidget {
     final humidValue = data.humidity.toInt();
 
     // Determine overall status based on pm25
-    bool isWarningOverall = pm25Value > 35;
-    String statusText = isWarningOverall ? 'Warning' : 'Good';
-    String subStatusText = isWarningOverall ? 'Air Quality' : 'Air Today';
-    String optimalText = isWarningOverall ? 'Attention' : 'Optimal';
-    Color mainStatusColor = isWarningOverall ? AppTheme.error : AppTheme.primary;
+    bool isCritical = data.status == AirQualityStatus.critical;
+    bool isWarning = data.status == AirQualityStatus.warning;
+    String statusText = isCritical ? 'Critical' : (isWarning ? 'Warning' : 'Good');
+    String subStatusText = isCritical ? 'Hazardous' : (isWarning ? 'Air Quality' : 'Air Today');
+    String optimalText = isCritical ? 'Danger' : (isWarning ? 'Attention' : 'Optimal');
+    Color mainStatusColor = isCritical ? AppTheme.error : (isWarning ? AppTheme.warning : AppTheme.primary);
 
     return SingleChildScrollView(
       padding: const EdgeInsets.only(left: 20, right: 20, top: 100, bottom: 100),
@@ -238,7 +239,7 @@ class HomeScreen extends StatelessWidget {
                                       width: 8,
                                       height: 8,
                                       decoration: BoxDecoration(
-                                        color: isWarningOverall ? AppTheme.error : AppTheme.primaryContainer,
+                                        color: mainStatusColor,
                                         shape: BoxShape.circle,
                                       ),
                                     ),
@@ -248,7 +249,7 @@ class HomeScreen extends StatelessWidget {
                                       style: TextStyle(
                                         fontSize: 11,
                                         fontWeight: FontWeight.bold,
-                                        color: isWarningOverall ? AppTheme.error : AppTheme.primary,
+                                        color: mainStatusColor,
                                         letterSpacing: 0.5,
                                       ),
                                     ),
@@ -308,7 +309,7 @@ class HomeScreen extends StatelessWidget {
             zoneName: 'Zone 01 · Main Gate',
             value: '18 µg/m³',
             icon: Icons.door_front_door_outlined,
-            isWarning: false,
+            status: AirQualityStatus.normal,
             trendIcon: Icons.trending_up,
           ),
           const SizedBox(height: 12),
@@ -316,7 +317,7 @@ class HomeScreen extends StatelessWidget {
             zoneName: 'Zone 02 · Workshop',
             value: '42 µg/m³',
             icon: Icons.handyman_outlined,
-            isWarning: true,
+            status: AirQualityStatus.warning,
             trendIcon: Icons.north,
           ),
           const SizedBox(height: 12),
@@ -324,16 +325,16 @@ class HomeScreen extends StatelessWidget {
             zoneName: 'Zone 03 · Research Lab',
             value: '21 µg/m³',
             icon: Icons.science_outlined,
-            isWarning: false,
+            status: AirQualityStatus.normal,
             trendIcon: Icons.east,
           ),
           const SizedBox(height: 12),
           _buildZoneCard(
             zoneName: 'Zone 04 · Perimeter',
-            value: '14 µg/m³',
+            value: '112 µg/m³',
             icon: Icons.park_outlined,
-            isWarning: false,
-            trendIcon: Icons.trending_down,
+            status: AirQualityStatus.critical,
+            trendIcon: Icons.trending_up,
           ),
         ],
       ),
@@ -386,12 +387,16 @@ class HomeScreen extends StatelessWidget {
     required String zoneName,
     required String value,
     required IconData icon,
-    required bool isWarning,
+    required AirQualityStatus status,
     required IconData trendIcon,
   }) {
-    final String statusText = isWarning ? 'Warning' : 'Normal';
-    final Color onMainColor = isWarning ? AppTheme.onErrorContainer : AppTheme.primaryContainer;
-    final Color highlightColor = isWarning ? AppTheme.error : AppTheme.primary;
+    final bool isCritical = status == AirQualityStatus.critical;
+    final bool isWarning = status == AirQualityStatus.warning;
+    final String statusText = isCritical ? 'Critical' : (isWarning ? 'Warning' : 'Normal');
+    final Color onMainColor = isCritical ? AppTheme.onErrorContainer : (isWarning ? AppTheme.onWarningContainer : AppTheme.primaryContainer);
+    final Color highlightColor = isCritical ? AppTheme.error : (isWarning ? AppTheme.warning : AppTheme.primary);
+    final Color containerColor = isCritical ? AppTheme.errorContainer.withValues(alpha: 0.4) : (isWarning ? AppTheme.warningContainer : AppTheme.surfaceContainer);
+    final Color badgeBgColor = isCritical ? AppTheme.errorContainer : (isWarning ? AppTheme.warningContainer : AppTheme.surfaceContainerHigh);
     final String highlightValue = value.split(' ').first;
     final String unitValue = value.substring(highlightValue.length).trim();
 
@@ -418,7 +423,7 @@ class HomeScreen extends StatelessWidget {
                   width: 40,
                   height: 40,
                   decoration: BoxDecoration(
-                    color: isWarning ? AppTheme.errorContainer.withValues(alpha: 0.4) : AppTheme.surfaceContainer,
+                    color: containerColor,
                     shape: BoxShape.circle,
                   ),
                   child: Icon(icon, color: onMainColor, size: 20),
@@ -472,7 +477,7 @@ class HomeScreen extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  color: isWarning ? AppTheme.errorContainer : AppTheme.surfaceContainerHigh,
+                  color: badgeBgColor,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Row(
