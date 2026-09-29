@@ -416,12 +416,16 @@ class _ZoneDetailView extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Row(
-                      children: [
-                        const Icon(Icons.dynamic_form, color: AppTheme.primary, size: 20),
-                        const SizedBox(width: 8),
-                        const Text('Adaptive Monitoring', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppTheme.onSurface)),
-                      ],
+                    Expanded(
+                      child: Row(
+                        children: [
+                          const Icon(Icons.dynamic_form, color: AppTheme.primary, size: 20),
+                          const SizedBox(width: 8),
+                          const Expanded(
+                            child: Text('Adaptive Monitoring', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppTheme.onSurface), overflow: TextOverflow.ellipsis),
+                          ),
+                        ],
+                      ),
                     ),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
