@@ -16,5 +16,8 @@ void main() {
 
     // Verify that our app renders title
     expect(find.text('Hawa'), findsOneWidget);
+
+    // Settle simulation timer
+    await tester.pump(const Duration(seconds: 4));
   });
 }
