@@ -1,5 +1,8 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:hawa_mobile/models/sensor_data.dart';
+import 'package:hawa_mobile/providers/sensor_provider.dart';
 import 'package:hawa_mobile/theme/app_theme.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -7,256 +10,344 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final data = SensorData.mockSample;
+    final sensorProvider = context.watch<SensorProvider>();
+    final data = sensorProvider.currentData;
+    final isMqttConnected = sensorProvider.isConnectedMqtt;
     final pm25Value = data.pm25.toInt();
-    final pm10Value = data.pm10.toInt();
-    final tempValue = data.temperature.toInt();
+    final tempValue = data.temperature.toStringAsFixed(1);
     final humidValue = data.humidity.toInt();
+    final windSpeed = data.windSpeed.toStringAsFixed(1);
+    final co2Value = data.co2.toInt();
+    final fanOn = data.fan;
 
-    // Determine overall status based on pm25
-    bool isCritical = data.status == AirQualityStatus.critical;
-    bool isWarning = data.status == AirQualityStatus.warning;
-    String statusText = isCritical ? 'Critical' : (isWarning ? 'Warning' : 'Good');
-    String subStatusText = isCritical ? 'Hazardous' : (isWarning ? 'Air Quality' : 'Air Today');
-    String optimalText = isCritical ? 'Danger' : (isWarning ? 'Attention' : 'Optimal');
-    Color mainStatusColor = isCritical ? AppTheme.error : (isWarning ? AppTheme.warning : AppTheme.primary);
+    final bool isCritical = data.status == AirQualityStatus.critical;
+    final bool isWarning = data.status == AirQualityStatus.warning;
+    final String statusLabel = isCritical ? 'Berbahaya' : (isWarning ? 'Perhatian' : 'Baik');
+    final Color statusColor = isCritical
+        ? AppTheme.error
+        : (isWarning ? AppTheme.warning : AppTheme.success);
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.only(left: 20, right: 20, top: 100, bottom: 100),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Header title
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              const Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Hawa',
-                    style: TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.w600,
-                      color: AppTheme.primary,
-                      height: 1.1,
-                      letterSpacing: -0.5,
-                    ),
-                  ),
-                  Text(
-                    'Air Quality',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: AppTheme.secondary,
-                    ),
-                  ),
-                ],
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                decoration: BoxDecoration(
-                  color: AppTheme.surfaceContainerHigh,
-                  borderRadius: BorderRadius.circular(20),
-                ),
+    return RefreshIndicator(
+      color: AppTheme.primaryDark,
+      backgroundColor: Colors.white,
+      onRefresh: () => sensorProvider.init(),
+      child: CustomScrollView(
+        physics: const AlwaysScrollableScrollPhysics(
+          parent: BouncingScrollPhysics(),
+        ),
+        slivers: [
+          // ─── App Bar ──────────────────────────────────────────
+          SliverToBoxAdapter(
+            child: SafeArea(
+              bottom: false,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(24, 16, 24, 16),
                 child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Container(
-                      width: 8,
-                      height: 8,
-                      decoration: const BoxDecoration(
-                        color: AppTheme.primaryContainer,
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                    const SizedBox(width: 6),
-                    const Text(
-                      'LIVE SYNC',
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                        color: AppTheme.primary,
-                        letterSpacing: 0.5,
-                      ),
+                    // Location Pill
+                    _LocationPill(),
+                    // Avatar + Status
+                    Row(
+                      children: [
+                        // MQTT dot
+                        AnimatedContainer(
+                          duration: const Duration(milliseconds: 400),
+                          width: 8,
+                          height: 8,
+                          margin: const EdgeInsets.only(right: 10),
+                          decoration: BoxDecoration(
+                            color: isMqttConnected ? AppTheme.success : AppTheme.textMuted,
+                            shape: BoxShape.circle,
+                            boxShadow: isMqttConnected
+                                ? [BoxShadow(color: AppTheme.success.withValues(alpha: 0.5), blurRadius: 6, spreadRadius: 1)]
+                                : null,
+                          ),
+                        ),
+                        // Avatar
+                        Container(
+                          width: 38,
+                          height: 38,
+                          decoration: BoxDecoration(
+                            color: AppTheme.primaryDark,
+                            shape: BoxShape.circle,
+                            border: Border.all(color: Colors.white, width: 2),
+                          ),
+                          child: const Icon(Icons.person_rounded, color: Colors.white, size: 20),
+                        ),
+                      ],
                     ),
                   ],
                 ),
               ),
+            ),
+          ),
+
+          // ─── Body Content ─────────────────────────────────────────
+          SliverPadding(
+            padding: const EdgeInsets.fromLTRB(24, 0, 24, 120),
+            sliver: SliverList(
+              delegate: SliverChildListDelegate([
+
+                // ── Hero PM2.5 Card ──────────────────────────────
+                _HeroCard(
+                  pm25Value: pm25Value,
+                  statusLabel: statusLabel,
+                  statusColor: statusColor,
+                  isCritical: isCritical,
+                  isWarning: isWarning,
+                  temp: tempValue,
+                  humid: '$humidValue%',
+                  wind: '$windSpeed m/s',
+                ),
+                const SizedBox(height: 20),
+
+                // ── Quick Highlights (Fan + CO2) ─────────────────
+                Row(
+                  children: [
+                    Expanded(
+                      child: _HighlightCard(
+                        icon: Icons.air_rounded,
+                        title: 'Exhaust Fan',
+                        value: fanOn ? 'ON' : 'OFF',
+                        valueColor: fanOn ? AppTheme.success : AppTheme.textMuted,
+                        subtitle: fanOn ? 'Aktif' : 'Mati',
+                        accentColor: fanOn ? AppTheme.successContainer : const Color(0xFFF0F0F0),
+                      ),
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: _HighlightCard(
+                        icon: Icons.co2_rounded,
+                        title: 'Karbon (CO₂)',
+                        value: '$co2Value',
+                        valueColor: co2Value > 1000 ? AppTheme.error : AppTheme.primaryDark,
+                        subtitle: 'ppm',
+                        accentColor: co2Value > 1000 ? AppTheme.errorContainer : AppTheme.mintContainer,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 28),
+
+                // ── Section Header: Zona Monitoring ──────────────
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Zona Monitoring',
+                      style: AppTheme.font(
+                        fontSize: 17,
+                        fontWeight: FontWeight.w700,
+                        color: AppTheme.primaryDark,
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () {},
+                      child: Text(
+                        'Lihat Semua →',
+                        style: AppTheme.font(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: AppTheme.textSecondary,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 14),
+
+                // ── Zone Cards (only 2 primary) ───────────────────
+                _ZoneCard(
+                  zoneName: 'Zona 01 · Gerbang Utama',
+                  icon: Icons.door_front_door_outlined,
+                  pm25: pm25Value,
+                  status: data.status,
+                ),
+                const SizedBox(height: 12),
+                _ZoneCard(
+                  zoneName: 'Zona 02 · Workshop',
+                  icon: Icons.handyman_outlined,
+                  pm25: 42,
+                  status: AirQualityStatus.warning,
+                ),
+                const SizedBox(height: 20),
+
+                // ── Last Update ───────────────────────────────────
+                Center(
+                  child: Text(
+                    'Diperbarui: ${_formatTime(data.measuredAt)}',
+                    style: AppTheme.font(
+                      fontSize: 11,
+                      color: AppTheme.textMuted,
+                    ),
+                  ),
+                ),
+              ]),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _formatTime(DateTime dt) {
+    final now = DateTime.now();
+    final diff = now.difference(dt);
+    if (diff.inSeconds < 60) return 'Baru saja';
+    if (diff.inMinutes < 60) return '${diff.inMinutes} mnt lalu';
+    return '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
+  }
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+// Location Pill Widget
+// ──────────────────────────────────────────────────────────────────────────────
+
+class _LocationPill extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(30),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.75),
+            borderRadius: BorderRadius.circular(30),
+            border: Border.all(
+              color: Colors.white.withValues(alpha: 0.9),
+              width: 1.2,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: AppTheme.primaryDark.withValues(alpha: 0.06),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+              ),
             ],
           ),
-          const SizedBox(height: 24),
-
-          // Main Condition Focal Card
-          AspectRatio(
-            aspectRatio: 16 / 11,
-            child: Container(
-              decoration: BoxDecoration(
-                color: AppTheme.surfaceContainerLow,
-                borderRadius: BorderRadius.circular(24),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.03),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.location_on_rounded,
+                color: AppTheme.primaryDark,
+                size: 14,
               ),
-              child: Stack(
+              const SizedBox(width: 5),
+              Text(
+                'TPS Brakseng, Batu',
+                style: AppTheme.font(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: AppTheme.primaryDark,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+// Hero Card
+// ──────────────────────────────────────────────────────────────────────────────
+
+class _HeroCard extends StatelessWidget {
+  final int pm25Value;
+  final String statusLabel;
+  final Color statusColor;
+  final bool isCritical;
+  final bool isWarning;
+  final String temp;
+  final String humid;
+  final String wind;
+
+  const _HeroCard({
+    required this.pm25Value,
+    required this.statusLabel,
+    required this.statusColor,
+    required this.isCritical,
+    required this.isWarning,
+    required this.temp,
+    required this.humid,
+    required this.wind,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(28),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+        child: Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                Colors.white.withValues(alpha: 0.95),
+                AppTheme.mintContainer.withValues(alpha: 0.45),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(28),
+            border: Border.all(
+              color: Colors.white.withValues(alpha: 0.9),
+              width: 1.5,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: AppTheme.primaryDark.withValues(alpha: 0.07),
+                blurRadius: 24,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Label PM2.5
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  // Illustration background
-                  Positioned.fill(
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(24),
-                      child: Image.asset(
-                        'assets/images/home_illustration.png',
-                        fit: BoxFit.cover,
-                      ),
+                  Text(
+                    'PM 2.5 · Udara Ambien',
+                    style: AppTheme.font(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: AppTheme.textSecondary,
                     ),
                   ),
-                  Positioned.fill(
-                    child: Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(24),
-                        gradient: LinearGradient(
-                          colors: [
-                            Colors.white.withValues(alpha: 0.4),
-                            Colors.transparent,
-                            AppTheme.surfaceContainerHigh.withValues(alpha: 0.4),
-                          ],
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                        ),
-                      ),
+                  // Status pill
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                    decoration: BoxDecoration(
+                      color: statusColor.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(20),
                     ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(20),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                              decoration: BoxDecoration(
-                                color: Colors.white.withValues(alpha: 0.85),
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: Row(
-                                children: [
-                                  Icon(Icons.eco, color: mainStatusColor, size: 18),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    statusText,
-                                    style: TextStyle(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.bold,
-                                      color: mainStatusColor,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    subStatusText,
-                                    style: const TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w500,
-                                      color: AppTheme.secondary,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            Container(
-                              width: 36,
-                              height: 36,
-                              decoration: BoxDecoration(
-                                color: Colors.white.withValues(alpha: 0.8),
-                                shape: BoxShape.circle,
-                              ),
-                              child: const Icon(Icons.air, color: AppTheme.primary, size: 20),
-                            ),
-                          ],
-                        ),
                         Container(
-                          padding: const EdgeInsets.all(14),
+                          width: 6,
+                          height: 6,
                           decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.85),
-                            borderRadius: BorderRadius.circular(16),
+                            color: statusColor,
+                            shape: BoxShape.circle,
                           ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    crossAxisAlignment: CrossAxisAlignment.baseline,
-                                    textBaseline: TextBaseline.alphabetic,
-                                    children: [
-                                      Text(
-                                        '$pm25Value',
-                                        style: TextStyle(
-                                          fontSize: 36,
-                                          fontWeight: FontWeight.bold,
-                                          color: mainStatusColor,
-                                          height: 1,
-                                        ),
-                                      ),
-                                      const SizedBox(width: 6),
-                                      const Text(
-                                        'µg/m³ PM2.5',
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w600,
-                                          color: AppTheme.secondary,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    '3 of 4 zones are normal',
-                                    style: TextStyle(
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w500,
-                                      color: AppTheme.secondary.withValues(alpha: 0.8),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                decoration: BoxDecoration(
-                                  color: AppTheme.surfaceContainer,
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Row(
-                                  children: [
-                                    Container(
-                                      width: 8,
-                                      height: 8,
-                                      decoration: BoxDecoration(
-                                        color: mainStatusColor,
-                                        shape: BoxShape.circle,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 6),
-                                    Text(
-                                      optimalText.toUpperCase(),
-                                      style: TextStyle(
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.bold,
-                                        color: mainStatusColor,
-                                        letterSpacing: 0.5,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
+                        ),
+                        const SizedBox(width: 5),
+                        Text(
+                          statusLabel,
+                          style: AppTheme.font(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            color: statusColor,
                           ),
                         ),
                       ],
@@ -264,249 +355,315 @@ class HomeScreen extends StatelessWidget {
                   ),
                 ],
               ),
-            ),
-          ),
-          const SizedBox(height: 24),
-
-          // Data Bubbles Row (4 Compact Metrics)
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              _buildBubble('$pm25Value', 'PM2.5'),
-              _buildBubble('$pm10Value', 'PM10'),
-              _buildBubble('$tempValue°', 'Temp'),
-              _buildBubble('$humidValue%', 'Humid'),
-            ],
-          ),
-          const SizedBox(height: 32),
-
-          // Zones Section
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                'Zones',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  color: AppTheme.primary,
-                ),
-              ),
-              Text(
-                'Real-time Readings',
-                style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w500,
-                  color: AppTheme.secondary.withValues(alpha: 0.8),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-
-          // Zone Cards Stream
-          _buildZoneCard(
-            zoneName: 'Zone 01 · Main Gate',
-            value: '18 µg/m³',
-            icon: Icons.door_front_door_outlined,
-            status: AirQualityStatus.normal,
-            trendIcon: Icons.trending_up,
-          ),
-          const SizedBox(height: 12),
-          _buildZoneCard(
-            zoneName: 'Zone 02 · Workshop',
-            value: '42 µg/m³',
-            icon: Icons.handyman_outlined,
-            status: AirQualityStatus.warning,
-            trendIcon: Icons.north,
-          ),
-          const SizedBox(height: 12),
-          _buildZoneCard(
-            zoneName: 'Zone 03 · Research Lab',
-            value: '21 µg/m³',
-            icon: Icons.science_outlined,
-            status: AirQualityStatus.normal,
-            trendIcon: Icons.east,
-          ),
-          const SizedBox(height: 12),
-          _buildZoneCard(
-            zoneName: 'Zone 04 · Perimeter',
-            value: '112 µg/m³',
-            icon: Icons.park_outlined,
-            status: AirQualityStatus.critical,
-            trendIcon: Icons.trending_up,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildBubble(String value, String label) {
-    return Expanded(
-      child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 4),
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        decoration: BoxDecoration(
-          color: AppTheme.surfaceContainerLowest,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.03),
-              blurRadius: 4,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Column(
-          children: [
-            Text(
-              value,
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: AppTheme.primary,
-                height: 1.1,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              label,
-              style: const TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w600,
-                color: AppTheme.secondary,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildZoneCard({
-    required String zoneName,
-    required String value,
-    required IconData icon,
-    required AirQualityStatus status,
-    required IconData trendIcon,
-  }) {
-    final bool isCritical = status == AirQualityStatus.critical;
-    final bool isWarning = status == AirQualityStatus.warning;
-    final String statusText = isCritical ? 'Critical' : (isWarning ? 'Warning' : 'Normal');
-    final Color onMainColor = isCritical ? AppTheme.onErrorContainer : (isWarning ? AppTheme.onWarningContainer : AppTheme.primaryContainer);
-    final Color highlightColor = isCritical ? AppTheme.error : (isWarning ? AppTheme.warning : AppTheme.primary);
-    final Color containerColor = isCritical ? AppTheme.errorContainer.withValues(alpha: 0.4) : (isWarning ? AppTheme.warningContainer : AppTheme.surfaceContainer);
-    final Color badgeBgColor = isCritical ? AppTheme.errorContainer : (isWarning ? AppTheme.warningContainer : AppTheme.surfaceContainerHigh);
-    final String highlightValue = value.split(' ').first;
-    final String unitValue = value.substring(highlightValue.length).trim();
-
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppTheme.surfaceContainerLowest,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Expanded(
-            child: Row(
-              children: [
-                Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: containerColor,
-                    shape: BoxShape.circle,
+              const SizedBox(height: 16),
+              // Big Number
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    '$pm25Value',
+                    style: AppTheme.font(
+                      fontSize: 58,
+                      fontWeight: FontWeight.w700,
+                      color: AppTheme.primaryDark,
+                      height: 0.9,
+                    ),
                   ),
-                  child: Icon(icon, color: onMainColor, size: 20),
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        zoneName,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: AppTheme.primary,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 2),
-                      Row(
-                        children: [
-                          Text(
-                            highlightValue,
-                            style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.bold,
-                              color: onMainColor,
-                            ),
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            unitValue,
-                            style: const TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w600,
-                              color: AppTheme.secondary,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 12),
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: badgeBgColor,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 8,
-                      height: 8,
-                      decoration: BoxDecoration(
-                        color: highlightColor,
-                        shape: BoxShape.circle,
+                  const SizedBox(width: 8),
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: Text(
+                      'µg/m³',
+                      style: AppTheme.font(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: AppTheme.textSecondary,
                       ),
                     ),
-                    const SizedBox(width: 6),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+              // Divider
+              Divider(color: AppTheme.primaryDark.withValues(alpha: 0.06), height: 1),
+              const SizedBox(height: 16),
+              // Bottom stats row
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  _HeroStat(icon: Icons.thermostat_rounded, label: 'Suhu', value: '$temp°C'),
+                  _HeroStat(icon: Icons.water_drop_outlined, label: 'Lembab', value: humid),
+                  _HeroStat(icon: Icons.air_rounded, label: 'Angin', value: wind),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _HeroStat extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String value;
+
+  const _HeroStat({
+    required this.icon,
+    required this.label,
+    required this.value,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Container(
+          width: 32,
+          height: 32,
+          decoration: BoxDecoration(
+            color: AppTheme.mintContainer,
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Icon(icon, color: AppTheme.primaryDark, size: 16),
+        ),
+        const SizedBox(width: 8),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              label,
+              style: AppTheme.font(
+                fontSize: 10,
+                color: AppTheme.textMuted,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            Text(
+              value,
+              style: AppTheme.font(
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+                color: AppTheme.primaryDark,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+// Quick Highlight Card (Fan, CO2)
+// ──────────────────────────────────────────────────────────────────────────────
+
+class _HighlightCard extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String value;
+  final Color valueColor;
+  final String subtitle;
+  final Color accentColor;
+
+  const _HighlightCard({
+    required this.icon,
+    required this.title,
+    required this.value,
+    required this.valueColor,
+    required this.subtitle,
+    required this.accentColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(22),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+        child: Container(
+          padding: const EdgeInsets.all(18),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                Colors.white.withValues(alpha: 0.95),
+                accentColor.withValues(alpha: 0.55),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(22),
+            border: Border.all(
+              color: Colors.white.withValues(alpha: 0.9),
+              width: 1.2,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: AppTheme.primaryDark.withValues(alpha: 0.04),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 38,
+                height: 38,
+                decoration: BoxDecoration(
+                  color: accentColor,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(icon, color: valueColor, size: 20),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                title,
+                style: AppTheme.font(
+                  fontSize: 11,
+                  color: AppTheme.textSecondary,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.baseline,
+                textBaseline: TextBaseline.alphabetic,
+                children: [
+                  Text(
+                    value,
+                    style: AppTheme.font(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w700,
+                      color: valueColor,
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    subtitle,
+                    style: AppTheme.font(
+                      fontSize: 11,
+                      color: AppTheme.textMuted,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+// Zone Card
+// ──────────────────────────────────────────────────────────────────────────────
+
+class _ZoneCard extends StatelessWidget {
+  final String zoneName;
+  final IconData icon;
+  final int pm25;
+  final AirQualityStatus status;
+
+  const _ZoneCard({
+    required this.zoneName,
+    required this.icon,
+    required this.pm25,
+    required this.status,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final bool isCritical = status == AirQualityStatus.critical;
+    final bool isWarning = status == AirQualityStatus.warning;
+    final String statusText = isCritical ? 'Kritis' : (isWarning ? 'Waspada' : 'Normal');
+    final Color statusColor = isCritical
+        ? AppTheme.error
+        : (isWarning ? AppTheme.warning : AppTheme.success);
+    final Color bgContainer = isCritical
+        ? AppTheme.errorContainer
+        : (isWarning ? AppTheme.warningContainer : AppTheme.mintContainer);
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(20),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.78),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: Colors.white.withValues(alpha: 0.9),
+              width: 1.2,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: AppTheme.primaryDark.withValues(alpha: 0.04),
+                blurRadius: 10,
+                offset: const Offset(0, 3),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              // Icon
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: bgContainer,
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Icon(icon, color: statusColor, size: 22),
+              ),
+              const SizedBox(width: 14),
+              // Zone Name
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
                     Text(
-                      statusText,
-                      style: TextStyle(
-                        fontSize: 11,
+                      zoneName,
+                      style: AppTheme.font(
+                        fontSize: 13,
                         fontWeight: FontWeight.w600,
-                        color: onMainColor,
+                        color: AppTheme.primaryDark,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'PM2.5: $pm25 µg/m³',
+                      style: AppTheme.font(
+                        fontSize: 11,
+                        color: AppTheme.textSecondary,
                       ),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(width: 12),
-              Icon(trendIcon, color: onMainColor, size: 18),
+              // Status Badge
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: statusColor.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  statusText,
+                  style: AppTheme.font(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    color: statusColor,
+                  ),
+                ),
+              ),
             ],
           ),
-        ],
+        ),
       ),
     );
   }

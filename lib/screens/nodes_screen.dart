@@ -7,7 +7,7 @@ class NodesScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.only(left: 20, right: 20, top: 100, bottom: 100),
+      padding: const EdgeInsets.only(left: 20, right: 20, top: 72, bottom: 100),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -120,7 +120,7 @@ class NodesScreen extends StatelessWidget {
                     const Text(
                       '99.8%',
                       style: TextStyle(
-                        fontSize: 32,
+                        fontSize: 24,
                         fontWeight: FontWeight.bold,
                         color: AppTheme.primary,
                         height: 1,

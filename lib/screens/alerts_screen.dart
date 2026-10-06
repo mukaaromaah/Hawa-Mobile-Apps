@@ -7,7 +7,7 @@ class AlertsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.only(left: 20, right: 20, top: 100, bottom: 100),
+      padding: const EdgeInsets.only(left: 20, right: 20, top: 72, bottom: 100),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

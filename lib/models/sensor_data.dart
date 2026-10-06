@@ -29,6 +29,46 @@ class SensorData {
     required this.measuredAt,
   });
 
+  factory SensorData.fromJson(Map<String, dynamic> json) {
+    return SensorData(
+      pm1: (json['pm1'] as num?)?.toDouble() ?? 0.0,
+      pm25: (json['pm25'] as num?)?.toDouble() ?? 0.0,
+      pm10: (json['pm10'] as num?)?.toDouble() ?? 0.0,
+      co2: (json['co2'] as num?)?.toDouble() ?? 0.0,
+      temperature: (json['temperature'] as num?)?.toDouble() ?? (json['temp'] as num?)?.toDouble() ?? 0.0,
+      humidity: (json['humidity'] as num?)?.toDouble() ?? 0.0,
+      windSpeed: (json['windSpeed'] as num?)?.toDouble() ?? (json['wind_speed'] as num?)?.toDouble() ?? 0.0,
+      windDir: (json['windDir'] as num?)?.toInt() ?? (json['wind_dir'] as num?)?.toInt() ?? 0,
+      fan: json['fan'] is bool ? json['fan'] : (json['fan'] == 1 || json['fan'] == '1' || json['fan'] == 'on'),
+      measuredAt: () {
+        final rawTime = json['measured_at'] ?? json['measuredAt'] ?? json['timestamp'];
+        if (rawTime == null) return DateTime.now();
+        if (rawTime is num) {
+          final int val = rawTime.toInt();
+          // If in seconds (10 digits), convert to milliseconds
+          final int ms = val < 10000000000 ? val * 1000 : val;
+          return DateTime.fromMillisecondsSinceEpoch(ms);
+        }
+        return DateTime.tryParse(rawTime.toString()) ?? DateTime.now();
+      }(),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'pm1': pm1,
+      'pm25': pm25,
+      'pm10': pm10,
+      'co2': co2,
+      'temperature': temperature,
+      'humidity': humidity,
+      'windSpeed': windSpeed,
+      'windDir': windDir,
+      'fan': fan,
+      'measuredAt': measuredAt.toIso8601String(),
+    };
+  }
+
   // Kategori Kualitas Udara berdasarkan PM2.5
   String get airQualityCategory {
     if (pm25 <= 35) return 'Baik (Good)';

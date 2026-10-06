@@ -26,7 +26,7 @@ class _ZonesScreenState extends State<ZonesScreen> {
     }
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.only(left: 20, right: 20, top: 100, bottom: 100),
+      padding: const EdgeInsets.only(left: 20, right: 20, top: 72, bottom: 100),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -142,24 +142,28 @@ class _ZoneListCardState extends State<_ZoneListCard> with SingleTickerProviderS
                     child: Icon(z['icon'] as IconData, color: isWarning ? AppTheme.onErrorContainer : AppTheme.primary, size: 22),
                   ),
                   const SizedBox(width: 14),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        '${z['name']} · ${z['location']}',
-                        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppTheme.onSurface),
-                      ),
-                      const SizedBox(height: 2),
-                      Row(
-                        children: [
-                          Text(
-                            '${z['pm25']}',
-                            style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: isWarning ? AppTheme.onErrorContainer : AppTheme.primary),
-                          ),
-                          const Text(' µg/m³ PM2.5', style: TextStyle(fontSize: 11, color: Color(0xFF404942))),
-                        ],
-                      ),
-                    ],
+                  Flexible(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '${z['name']} · ${z['location']}',
+                          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppTheme.onSurface),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 2),
+                        Row(
+                          children: [
+                            Text(
+                              '${z['pm25']}',
+                              style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: isWarning ? AppTheme.onErrorContainer : AppTheme.primary),
+                            ),
+                            const Text(' µg/m³ PM2.5', style: TextStyle(fontSize: 11, color: Color(0xFF404942))),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),

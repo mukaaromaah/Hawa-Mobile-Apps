@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:hawa_mobile/screens/home_screen.dart';
 import 'package:hawa_mobile/screens/zones_screen.dart';
 import 'package:hawa_mobile/screens/alerts_screen.dart';
@@ -13,74 +14,11 @@ class MainScreen extends StatefulWidget {
   State<MainScreen> createState() => _MainScreenState();
 }
 
-class _MainScreenState extends State<MainScreen> {
+class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
   int _selectedIndex = 0;
+  // Alert badge: shown on Alerts tab (index 2) until user visits it
+  bool _hasUnreadAlert = true;
 
-  @override
-  void initState() {
-    super.initState();
-    // Simulate push notification for demo scenario ("Andi")
-    Future.delayed(const Duration(seconds: 3), () {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          behavior: SnackBarBehavior.floating,
-          margin: const EdgeInsets.only(top: 16, left: 16, right: 16, bottom: 24),
-          backgroundColor: AppTheme.errorContainer,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          elevation: 8,
-          content: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: const BoxDecoration(
-                  color: AppTheme.error,
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(Icons.notifications_active, color: Colors.white, size: 20),
-              ),
-              const SizedBox(width: 12),
-              const Expanded(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Hawa • Just Now',
-                      style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppTheme.onErrorContainer),
-                    ),
-                    SizedBox(height: 4),
-                    Text(
-                      'Zone 04 Critical Alert!',
-                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppTheme.onErrorContainer),
-                    ),
-                    SizedBox(height: 2),
-                    Text(
-                      'Rapid PM2.5 increase detected. Adaptive sensing boosted to 15s interval.',
-                      style: TextStyle(fontSize: 12, color: AppTheme.onErrorContainer),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          duration: const Duration(seconds: 8),
-          action: SnackBarAction(
-            label: 'VIEW',
-            textColor: AppTheme.error,
-            onPressed: () {
-              setState(() {
-                _selectedIndex = 2; // Jump to Alerts tab
-              });
-            },
-          ),
-        ),
-      );
-    });
-  }
-
-  // Daftar halaman yang akan ditampilkan sesuai tab yang dipilih
   final List<Widget> _screens = const [
     HomeScreen(),
     ZonesScreen(),
@@ -89,125 +27,126 @@ class _MainScreenState extends State<MainScreen> {
     NodesScreen(),
   ];
 
-  final List<String> _titles = [
-    'Home',
-    'Zones',
-    'Alerts',
-    'History',
-    'Nodes',
+  final List<({IconData icon, IconData activeIcon, String label})> _navItems = [
+    (icon: Icons.home_outlined, activeIcon: Icons.home_rounded, label: 'Home'),
+    (icon: Icons.grid_view_outlined, activeIcon: Icons.grid_view_rounded, label: 'Zones'),
+    (icon: Icons.notifications_outlined, activeIcon: Icons.notifications_rounded, label: 'Alerts'),
+    (icon: Icons.show_chart_outlined, activeIcon: Icons.show_chart, label: 'History'),
+    (icon: Icons.wifi_tethering_outlined, activeIcon: Icons.wifi_tethering, label: 'Nodes'),
   ];
 
+  @override
+  void initState() {
+    super.initState();
+  }
+
   void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
+    HapticFeedback.selectionClick();
+    // Clear alert badge when user visits Alerts tab
+    if (index == 2 && _hasUnreadAlert) {
+      setState(() => _hasUnreadAlert = false);
+    } else {
+      setState(() => _selectedIndex = index);
+    }
+    setState(() => _selectedIndex = index);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppTheme.background,
       extendBody: true,
-      appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(kToolbarHeight),
-        child: Container(
-          decoration: BoxDecoration(
-            color: AppTheme.surface.withValues(alpha: 0.8),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.04),
-                blurRadius: 8,
-                offset: const Offset(0, 1),
-              ),
-            ],
-          ),
-          child: SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        width: 12,
-                        height: 12,
-                        decoration: const BoxDecoration(
-                          color: AppTheme.primaryContainer,
-                          shape: BoxShape.circle,
+      body: IndexedStack(
+        index: _selectedIndex,
+        children: _screens,
+      ),
+      bottomNavigationBar: _buildFloatingPillDock(),
+    );
+  }
+
+  Widget _buildFloatingPillDock() {
+    return Container(
+      padding: const EdgeInsets.only(left: 20, right: 20, bottom: 28, top: 10),
+      color: Colors.transparent,
+      child: Container(
+        height: 64,
+        decoration: BoxDecoration(
+          color: AppTheme.primaryDark,
+          borderRadius: BorderRadius.circular(40),
+          boxShadow: [
+            BoxShadow(
+              color: AppTheme.primaryDark.withValues(alpha: 0.28),
+              blurRadius: 20,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: List.generate(_navItems.length, (index) {
+            final item = _navItems[index];
+            final isSelected = _selectedIndex == index;
+            // Show badge on Alerts tab (index 2) when unread
+            final showBadge = index == 2 && _hasUnreadAlert;
+
+            return GestureDetector(
+              onTap: () => _onItemTapped(index),
+              behavior: HitTestBehavior.opaque,
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                curve: Curves.easeOut,
+                padding: EdgeInsets.symmetric(
+                  horizontal: isSelected ? 14 : 10,
+                  vertical: 9,
+                ),
+                decoration: BoxDecoration(
+                  color: isSelected ? AppTheme.accentGreen : Colors.transparent,
+                  borderRadius: BorderRadius.circular(30),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        Icon(
+                          isSelected ? item.activeIcon : item.icon,
+                          color: isSelected
+                              ? AppTheme.primaryDark
+                              : Colors.white.withValues(alpha: 0.5),
+                          size: 22,
                         ),
-                      ),
-                      const SizedBox(width: 8),
+                        if (showBadge)
+                          Positioned(
+                            top: -3,
+                            right: -3,
+                            child: Container(
+                              width: 8,
+                              height: 8,
+                              decoration: const BoxDecoration(
+                                color: AppTheme.error,
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                    if (isSelected) ...[
+                      const SizedBox(width: 6),
                       Text(
-                        _titles[_selectedIndex],
-                        style: const TextStyle(
-                          fontSize: 22,
+                        item.label,
+                        style: AppTheme.font(
+                          fontSize: 12,
                           fontWeight: FontWeight.w600,
-                          color: AppTheme.onSurface,
-                          letterSpacing: -0.5,
+                          color: AppTheme.primaryDark,
                         ),
                       ),
                     ],
-                  ),
-                  Container(
-                    width: 32,
-                    height: 32,
-                    decoration: const BoxDecoration(
-                      color: AppTheme.primary,
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.person,
-                      color: Colors.white,
-                      size: 18,
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-          ),
-        ),
-      ),
-      body: _screens[_selectedIndex],
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          color: AppTheme.surface.withValues(alpha: 0.8),
-          boxShadow: [
-            BoxShadow(
-              color: const Color(0xFF18352A).withValues(alpha: 0.04),
-              blurRadius: 12,
-              offset: const Offset(0, -2),
-            ),
-          ],
-        ),
-        child: BottomNavigationBar(
-          currentIndex: _selectedIndex,
-          onTap: _onItemTapped,
-          items: const [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.home_outlined),
-              activeIcon: Icon(Icons.home),
-              label: 'Home',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.grid_view_outlined),
-              activeIcon: Icon(Icons.grid_view),
-              label: 'Zones',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.notifications_outlined),
-              activeIcon: Icon(Icons.notifications),
-              label: 'Alerts',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.show_chart_outlined),
-              activeIcon: Icon(Icons.show_chart),
-              label: 'History',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.wifi_tethering),
-              label: 'Nodes',
-            ),
-          ],
+            );
+          }),
         ),
       ),
     );

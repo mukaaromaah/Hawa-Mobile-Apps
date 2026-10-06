@@ -2,64 +2,98 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
-  // Warna Utama dari UI UX
-  static const Color surface = Color(0xFFE7FFF2);
-  static const Color onSurface = Color(0xFF022016);
-  static const Color primary = Color(0xFF004425);
-  static const Color secondary = Color(0xFF3E674F);
-  static const Color primaryContainer = Color(0xFF205C3A);
-  static const Color onPrimaryContainer = Color(0xFF95D2A7);
-  static const Color surfaceContainerLow = Color(0xFFDAFBEA);
-  static const Color surfaceContainer = Color(0xFFD4F5E5);
-  static const Color surfaceContainerHigh = Color(0xFFCFF0DF);
-  static const Color surfaceContainerLowest = Color(0xFFFFFFFF);
-  static const Color errorContainer = Color(0xFFFFDAD6);
-  static const Color onErrorContainer = Color(0xFF93000A);
-  static const Color error = Color(0xFFBA1A1A);
-  
-  // Warning colors
-  static const Color warning = Color(0xFFE9A23B); // Orange
-  static const Color warningContainer = Color(0xFFFFECCC);
-  static const Color onWarningContainer = Color(0xFF5E3A00);
+  // Palet Warna Minimalis & Bersih (Dominan Putih & Deep Forest Green)
+  static const Color background = Color(0xFFF7FAF8); // Off-white sejuk
+  static const Color surface = Colors.white; // Putih bersih
+  static const Color surfaceGlass = Color(0xCCFFFFFF); // Putih transparan 80%
+  static const Color borderLight = Color(0x1A0D3326); // Border sangat halus
+
+  // Aksen Warna
+  static const Color primaryDark = Color(0xFF0D3326); // Hijau tua pekat (Text & Floating Dock)
+  static const Color accentGreen = Color(0xFFB5E873); // Lime / light green segar ala Dribbble
+  static const Color mintContainer = Color(0xFFE2F4E6); // Mint lembut
+  static const Color textPrimary = Color(0xFF0D3326);
+  static const Color textSecondary = Color(0xFF6B8278);
+  static const Color textMuted = Color(0xFF9CB0A6);
+
+  // ── Alias untuk kompatibilitas backward ──────────────────────────────
+  static const Color primary = primaryDark;
+  static const Color secondary = textSecondary;
+  static const Color onSurface = textPrimary;
+  static const Color onErrorContainer = Color(0xFF7F1515);
+  static const Color onWarningContainer = Color(0xFF7A4800);
+  static const Color primaryContainer = Color(0xFF8BC4A8); // Hijau mint mid
+  static const Color surfaceContainer = Color(0xFFEEF4F1);
+  static const Color surfaceContainerHigh = Color(0xFFE4EDE8);
+  static const Color surfaceContainerLow = Color(0xFFF3F8F5);
+  static const Color surfaceContainerLowest = Color(0xFFF9FBFA);
+
+  // Status Colors
+  static const Color success = Color(0xFF2E9D68);
+  static const Color successContainer = Color(0xFFE5F7ED);
+  static const Color warning = Color(0xFFE89326);
+  static const Color warningContainer = Color(0xFFFFF3E0);
+  static const Color error = Color(0xFFD32F2F);
+  static const Color errorContainer = Color(0xFFFEEBEB);
+
+  // Helper untuk Dekorasi Glassmorphism
+  static BoxDecoration glassDecoration({
+    Color? color,
+    double borderRadius = 24,
+    Border? border,
+    List<BoxShadow>? boxShadow,
+  }) {
+    return BoxDecoration(
+      color: color ?? Colors.white.withValues(alpha: 0.85),
+      borderRadius: BorderRadius.circular(borderRadius),
+      border: border ??
+          Border.all(
+            color: Colors.white.withValues(alpha: 0.8),
+            width: 1.5,
+          ),
+      boxShadow: boxShadow ??
+          [
+            BoxShadow(
+              color: primaryDark.withValues(alpha: 0.04),
+              blurRadius: 16,
+              offset: const Offset(0, 6),
+            ),
+          ],
+    );
+  }
+
+  // Standar Tipografi Poppins
+  static TextStyle font({
+    double fontSize = 14,
+    FontWeight fontWeight = FontWeight.normal,
+    Color? color,
+    double? height,
+    double? letterSpacing,
+  }) {
+    return GoogleFonts.poppins(
+      fontSize: fontSize,
+      fontWeight: fontWeight,
+      color: color ?? textPrimary,
+      height: height,
+      letterSpacing: letterSpacing,
+    );
+  }
 
   static ThemeData get lightTheme {
+    final baseTextTheme = GoogleFonts.poppinsTextTheme();
+
     return ThemeData(
       useMaterial3: true,
-      scaffoldBackgroundColor: surface,
-      colorScheme: const ColorScheme.light(
-        primary: primary,
-        secondary: secondary,
+      scaffoldBackgroundColor: background,
+      colorScheme: ColorScheme.light(
+        primary: primaryDark,
+        secondary: accentGreen,
         surface: surface,
         error: error,
-        primaryContainer: primaryContainer,
-        onPrimaryContainer: onPrimaryContainer,
-        secondaryContainer: surfaceContainerHigh,
-        errorContainer: errorContainer,
-        onErrorContainer: onErrorContainer,
       ),
-      textTheme: GoogleFonts.outfitTextTheme().apply(
-        bodyColor: onSurface,
-        displayColor: onSurface,
-      ),
-      bottomNavigationBarTheme: BottomNavigationBarThemeData(
-        backgroundColor: surface.withValues(alpha: 0.8),
-        selectedItemColor: primaryContainer,
-        unselectedItemColor: const Color(0xFF404942), // on-surface-variant
-        showUnselectedLabels: true,
-        type: BottomNavigationBarType.fixed,
-        elevation: 0,
-      ),
-      appBarTheme: const AppBarTheme(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        centerTitle: false,
-        iconTheme: IconThemeData(color: primary),
-        titleTextStyle: TextStyle(
-          color: onSurface,
-          fontSize: 22, // headline-md
-          fontWeight: FontWeight.w600,
-          fontFamily: 'Outfit',
-        ),
+      textTheme: baseTextTheme.apply(
+        bodyColor: textPrimary,
+        displayColor: textPrimary,
       ),
     );
   }
