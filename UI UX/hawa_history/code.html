@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { colors: { "on-secondary-fixed": "#002112", "inverse-primary": "#97d4a9", "on-primary-container": "#95d2a7", "tertiary-container": "#005e37", "surface-container": "#d4f5e5", "secondary-fixed": "#bfedcf", "on-primary-fixed-variant": "#135130", "on-secondary-fixed-variant": "#264f39", "error": "#ba1a1a", "on-tertiary-container": "#82d6a2", "background": "#e7fff2", "tertiary-fixed": "#9ff5bf", "surface": "#e7fff2", "primary": "#004425", "error-container": "#ffdad6", "outline": "#707971", "outline-variant": "#c0c9bf", "on-surface-variant": "#404942", "surface-variant": "#c9ead9", "surface-tint": "#2f6a46", "primary-container": "#205c3a", "inverse-on-surface": "#d7f8e8", "on-secondary": "#ffffff", "secondary-container": "#bfedcf", "surface-bright": "#e7fff2", "on-primary": "#ffffff", "on-secondary-container": "#446d55", "on-error": "#ffffff", "tertiary": "#004427", "on-primary-fixed": "#00210f", "surface-container-lowest": "#ffffff", "on-surface": "#022016", "on-tertiary": "#ffffff", "surface-container-highest": "#c9ead9", "surface-dim": "#c1e1d1", "on-error-container": "#93000a", "secondary": "#3e674f", "tertiary-fixed-dim": "#84d8a4", "primary-fixed": "#b2f1c4", "on-tertiary-fixed-variant": "#005230", "inverse-surface": "#19362b", "surface-container-low": "#dafbea", "on-tertiary-fixed": "#002110", "secondary-fixed-dim": "#a4d1b4", "primary-fixed-dim": "#97d4a9", "on-background": "#022016", "surface-container-high": "#cff0df" }, borderRadius: { "DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px" }, spacing: { "gutter-mobile": "1rem", "space-lg": "1.5rem", "margin": "3rem", "space-xl": "2.5rem", "gutter": "1.5rem", "space-xs": "0.25rem", "space-sm": "0.5rem", "margin-mobile": "1.25rem", "space-md": "1rem" }, fontFamily: { "label-caps": ["Outfit"], "body-md": ["Outfit"], "headline-lg": ["Outfit"], "display-hero-mobile": ["Outfit"], "headline-metric": ["Outfit"], "headline-metric-mobile": ["Outfit"], "status-pill": ["Outfit"], "title-sm": ["Outfit"], "display-hero": ["Outfit"], "body-lg": ["Outfit"], "headline-md": ["Outfit"] }, fontSize: { "label-caps": ["11px", { "lineHeight": "14px", "letterSpacing": "0.06em", "fontWeight": "600" }], "body-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0em", "fontWeight": "400" }], "headline-lg": ["28px", { "lineHeight": "36px", "letterSpacing": "-0.01em", "fontWeight": "600" }], "display-hero-mobile": ["44px", { "lineHeight": "52px", "letterSpacing": "-0.02em", "fontWeight": "700" }], "headline-metric": ["40px", { "lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "700" }], "headline-metric-mobile": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700" }], "status-pill": ["13px", { "lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "500" }], "title-sm": ["18px", { "lineHeight": "26px", "letterSpacing": "0em", "fontWeight": "600" }], "display-hero": ["64px", { "lineHeight": "72px", "letterSpacing": "-0.03em", "fontWeight": "700" }], "body-lg": ["16px", { "lineHeight": "24px", "letterSpacing": "0em", "fontWeight": "400" }], "headline-md": ["22px", { "lineHeight": "30px", "letterSpacing": "0em", "fontWeight": "600" }] } } } };</script><style>@layer base{html,body{width:100vw;margin:0;padding:0;}body{overscroll-behavior:none;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head><body class="bg-surface text-on-surface font-body-md text-body-md flex flex-col min-h-screen"><header class="fixed top-0 w-full z-50 pt-safe bg-surface/80 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="h-16 px-gutter-mobile flex items-center justify-between"><div class="flex items-center gap-space-sm"><div class="w-3 h-3 rounded-full bg-primary-container animate-pulse"></div><span class="font-headline-md text-headline-md tracking-tight text-on-surface">History</span></div><div class="flex items-center gap-space-sm"><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="flex-1 flex flex-col relative w-full pt-16 pb-24 bg-surface px-gutter-mobile"><div class="flex flex-col w-full pb-6 space-y-4">
+<!-- Top Bar: Clean Dropdown Pill & Calendar Action -->
+<div class="flex items-center justify-between gap-space-sm pt-1">
+<!-- Zone Selector Pill Dropdown -->
+<button class="flex items-center gap-space-sm bg-surface-container-lowest text-on-surface px-4 py-2.5 rounded-full shadow-[0_4px_16px_rgba(24,53,42,0.05)] active:scale-[0.98] transition-transform" type="button">
+<span class="material-symbols-outlined text-primary text-[18px]" style="font-variation-settings: 'FILL' 1;">location_on</span>
+<span class="font-title-sm text-body-md font-semibold text-on-surface tracking-tight">Zone 02 — Workshop</span>
+<span class="material-symbols-outlined text-on-surface-variant text-[18px]">expand_more</span>
+</button>
+<!-- Calendar Action Pill -->
+<button aria-label="Select Date Range" class="w-10 h-10 flex items-center justify-center bg-surface-container-lowest text-on-surface rounded-full shadow-[0_4px_16px_rgba(24,53,42,0.05)] active:scale-95 transition-transform" type="button">
+<span class="material-symbols-outlined text-[20px]">calendar_today</span>
+</button>
+</div>
+<!-- Time Range Segmented Selector Bubbles -->
+<div class="bg-surface-container-low p-1 rounded-full flex items-center justify-between shadow-[0_2px_8px_rgba(24,53,42,0.03)]">
+<button class="time-btn flex-1 py-1.5 px-3 rounded-full text-center font-status-pill text-status-pill text-on-surface-variant hover:text-on-surface transition-all" data-period="1h" type="button">1H</button>
+<button class="time-btn flex-1 py-1.5 px-3 rounded-full text-center font-status-pill text-status-pill text-on-surface-variant hover:text-on-surface transition-all" data-period="6h" type="button">6H</button>
+<button class="time-btn flex-1 py-1.5 px-3 rounded-full text-center font-status-pill text-status-pill bg-primary-container text-on-primary shadow-sm font-semibold transition-all" data-period="24h" type="button">24H</button>
+<button class="time-btn flex-1 py-1.5 px-3 rounded-full text-center font-status-pill text-status-pill text-on-surface-variant hover:text-on-surface transition-all" data-period="7d" type="button">7D</button>
+</div>
+<!-- Large Focal Chart Card -->
+<div class="bg-surface-container-lowest rounded-lg p-5 shadow-[0_12px_32px_-4px_rgba(24,53,42,0.06)] flex flex-col relative overflow-hidden">
+<!-- Card Header Info -->
+<div class="flex items-start justify-between">
+<div class="flex flex-col">
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">Air Particle Density</span>
+<div class="flex items-baseline gap-space-xs mt-0.5">
+<span class="font-headline-metric-mobile text-headline-metric-mobile text-primary font-bold tracking-tight" id="metric-value">42</span>
+<span class="font-title-sm text-body-md text-on-surface-variant font-medium">µg/m³</span>
+</div>
+</div>
+<!-- Current Status Pill with Soft Tint -->
+<div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-secondary-fixed text-on-secondary-fixed">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+<span class="font-status-pill text-status-pill text-[12px] font-semibold">Moderate</span>
+</div>
+</div>
+<!-- Chart Visual Canvas -->
+<div class="w-full h-44 mt-3 relative">
+<svg class="w-full h-full overflow-visible" preserveaspectratio="none" viewbox="0 0 340 150">
+<defs>
+<!-- Gradient fill for the wave -->
+<lineargradient id="chartGradient" x1="0%" x2="0%" y1="0%" y2="100%">
+<stop offset="0%" stop-color="#E9A23B" stop-opacity="0.38"></stop>
+<stop offset="60%" stop-color="#E9A23B" stop-opacity="0.12"></stop>
+<stop offset="100%" stop-color="#E9A23B" stop-opacity="0.0"></stop>
+</lineargradient>
+</defs>
+<!-- Subtle Background Gridlines -->
+<line stroke="#C9EAD9" stroke-dasharray="3 3" stroke-opacity="0.6" stroke-width="1" x1="0" x2="340" y1="20" y2="20"></line>
+<line stroke="#C9EAD9" stroke-dasharray="3 3" stroke-opacity="0.6" stroke-width="1" x1="0" x2="340" y1="70" y2="70"></line>
+<line stroke="#C9EAD9" stroke-dasharray="3 3" stroke-opacity="0.6" stroke-width="1" x1="0" x2="340" y1="120" y2="120"></line>
+<!-- Area fill -->
+<path d="M 0,105 C 40,95 70,115 110,85 C 150,55 180,78 220,52 C 260,26 290,14 340,32 L 340,140 L 0,140 Z" fill="url(#chartGradient)"></path>
+<!-- Smooth Curve Line Chart -->
+<path d="M 0,105 C 40,95 70,115 110,85 C 150,55 180,78 220,52 C 260,26 290,14 340,32" fill="none" stroke="#E9A23B" stroke-linecap="round" stroke-width="3"></path>
+<!-- Latest Value Ping Point -->
+<circle cx="340" cy="32" fill="#FFFFFF" r="6" stroke="#E9A23B" stroke-width="3"></circle>
+<circle class="animate-ping" cx="340" cy="32" fill="#E9A23B" fill-opacity="0.2" r="10"></circle>
+</svg>
+</div>
+<!-- Time Labels along Chart Axis -->
+<div class="flex justify-between items-center text-on-surface-variant font-label-caps text-label-caps pt-2 px-1">
+<span>06:00</span>
+<span>12:00</span>
+<span>18:00</span>
+<span class="font-semibold text-primary">Now</span>
+</div>
+</div>
+<!-- Metric Selector Bubbles (4 Interactive Pills) -->
+<div class="grid grid-cols-4 gap-2">
+<!-- PM2.5 (Active) -->
+<button class="metric-btn flex flex-col items-center justify-center p-3 rounded-2xl bg-primary-container text-on-primary shadow-sm active:scale-95 transition-all" type="button">
+<span class="material-symbols-outlined text-[20px] mb-1">blur_on</span>
+<span class="font-status-pill text-status-pill font-semibold leading-tight">PM2.5</span>
+</button>
+<!-- PM10 -->
+<button class="metric-btn flex flex-col items-center justify-center p-3 rounded-2xl bg-surface-container-lowest text-on-surface-variant shadow-[0_2px_8px_rgba(24,53,42,0.03)] hover:text-on-surface active:scale-95 transition-all" type="button">
+<span class="material-symbols-outlined text-[20px] mb-1 text-on-surface-variant">grain</span>
+<span class="font-status-pill text-status-pill font-medium leading-tight">PM10</span>
+</button>
+<!-- Temperature -->
+<button class="metric-btn flex flex-col items-center justify-center p-3 rounded-2xl bg-surface-container-lowest text-on-surface-variant shadow-[0_2px_8px_rgba(24,53,42,0.03)] hover:text-on-surface active:scale-95 transition-all" type="button">
+<span class="material-symbols-outlined text-[20px] mb-1 text-on-surface-variant">thermostat</span>
+<span class="font-status-pill text-status-pill font-medium leading-tight">Temp</span>
+</button>
+<!-- Humidity -->
+<button class="metric-btn flex flex-col items-center justify-center p-3 rounded-2xl bg-surface-container-lowest text-on-surface-variant shadow-[0_2px_8px_rgba(24,53,42,0.03)] hover:text-on-surface active:scale-95 transition-all" type="button">
+<span class="material-symbols-outlined text-[20px] mb-1 text-on-surface-variant">water_drop</span>
+<span class="font-status-pill text-status-pill font-medium leading-tight">Humidity</span>
+</button>
+</div>
+<!-- Trend Summary Pill Card -->
+<div class="bg-surface-container-high rounded-2xl p-4 flex items-center justify-between shadow-[0_4px_16px_rgba(24,53,42,0.04)]">
+<div class="flex items-center gap-space-md min-w-0">
+<div class="w-10 h-10 rounded-full bg-surface-container-lowest flex items-center justify-center shadow-xs shrink-0">
+<span class="material-symbols-outlined text-secondary text-[22px]">trending_up</span>
+</div>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-1.5">
+<span class="font-title-sm text-body-md font-semibold text-primary">Increasing</span>
+<span class="px-1.5 py-0.5 rounded-full bg-surface-container-lowest font-label-caps text-[10px] text-error font-semibold">+32%</span>
+</div>
+<span class="font-body-md text-label-caps text-on-surface-variant truncate">Recorded spike in the last 6 hours</span>
+</div>
+</div>
+<div class="w-7 h-7 rounded-full bg-surface-container flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-primary text-[16px]">north_east</span>
+</div>
+</div>
+<!-- Zone Atmosphere Live Context Mini-Preview -->
+<div class="rounded-2xl bg-surface-container-lowest p-4 shadow-[0_4px_16px_rgba(24,53,42,0.04)] flex items-center gap-3">
+<img class="w-14 h-14 rounded-xl object-cover shrink-0" data-alt="Warm and brightly lit modern indoor botanical workshop with lush green indoor plants, natural timber beams, soft ambient sunlight filtering through glass windows, creating a serene and healthy atmospheric environment in natural green and pale cream tones." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCmlqPnJ7uj9XfRJz8EcTd4_DmqNuZv4KvNylpC5gjqVjJYQczJf7TvRbx6FKJF4esNAGuojZjZs1JaeZPzPxsJF789qcTYCX6EmBza9-90df6I5LBbrmB6mrx_wW-SWBvjXHa7pWYI81Ia8_Gtknqq5HGjVdBxslUmX6Dqt4gRwkhgZRvG9NTM7CnnxsfcyJWWJtreUuRgmIXE8AUR3jmp6Fwp2DPe29SWPEYt1AoLEZdSbCjS5Vmy_w"/>
+<div class="flex flex-col min-w-0">
+<span class="font-title-sm text-body-md font-semibold text-on-surface truncate">Workshop Ventilation</span>
+<span class="font-body-md text-label-caps text-on-surface-variant line-clamp-1">HVAC active: Circulation running at 78% speed</span>
+</div>
+</div>
+</div>
+<script>
+  // Simple micro-interaction for segmented tabs & metrics
+  document.querySelectorAll('.time-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.time-btn').forEach(b => {
+        b.classList.remove('bg-primary-container', 'text-on-primary', 'shadow-sm', 'font-semibold');
+        b.classList.add('text-on-surface-variant');
+      });
+      btn.classList.remove('text-on-surface-variant');
+      btn.classList.add('bg-primary-container', 'text-on-primary', 'shadow-sm', 'font-semibold');
+    });
+  });
+
+  document.querySelectorAll('.metric-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.metric-btn').forEach(b => {
+        b.classList.remove('bg-primary-container', 'text-on-primary');
+        b.classList.add('bg-surface-container-lowest', 'text-on-surface-variant');
+      });
+      btn.classList.remove('bg-surface-container-lowest', 'text-on-surface-variant');
+      btn.classList.add('bg-primary-container', 'text-on-primary');
+    });
+  });
+</script></main><nav class="fixed bottom-0 w-full z-50 pb-safe bg-surface/80 backdrop-blur-xl shadow-[0_-2px_12px_rgba(24,53,42,0.04)]" data-active-classes="text-primary-container font-semibold"><div class="flex justify-around items-center h-16 px-space-xs"><a class="flex flex-col items-center justify-center min-w-[48px] min-h-[48px] px-space-xs gap-space-xs text-on-surface-variant hover:text-on-surface transition-colors" data-path="home" href="#"><span class="material-symbols-outlined text-[24px]">home</span><span class="font-status-pill text-status-pill text-[11px] leading-tight">Home</span></a><a class="flex flex-col items-center justify-center min-w-[48px] min-h-[48px] px-space-xs gap-space-xs text-on-surface-variant hover:text-on-surface transition-colors" data-path="zones" href="#"><span class="material-symbols-outlined text-[24px]">grid_view</span><span class="font-status-pill text-status-pill text-[11px] leading-tight">Zones</span></a><a class="flex flex-col items-center justify-center min-w-[48px] min-h-[48px] px-space-xs gap-space-xs text-on-surface-variant hover:text-on-surface transition-colors" data-path="alerts" href="#"><span class="material-symbols-outlined text-[24px]">notifications</span><span class="font-status-pill text-status-pill text-[11px] leading-tight">Alerts</span></a><a aria-current="page" class="flex flex-col items-center justify-center min-w-[48px] min-h-[48px] px-space-xs gap-space-xs transition-colors text-primary-container font-semibold" data-path="history" href="#"><span class="material-symbols-outlined text-[24px]">show_chart</span><span class="font-status-pill text-status-pill text-[11px] leading-tight">History</span></a><a class="flex flex-col items-center justify-center min-w-[48px] min-h-[48px] px-space-xs gap-space-xs text-on-surface-variant hover:text-on-surface transition-colors" data-path="nodes" href="#"><span class="material-symbols-outlined text-[24px]">sensors</span><span class="font-status-pill text-status-pill text-[11px] leading-tight">Nodes</span></a></div></nav></body></html>

@@ -27,14 +27,27 @@ class HomeScreen extends StatelessWidget {
         ? AppTheme.error
         : (isWarning ? AppTheme.warning : AppTheme.success);
 
-    return RefreshIndicator(
-      color: AppTheme.primaryDark,
-      backgroundColor: Colors.white,
-      onRefresh: () => sensorProvider.init(),
-      child: CustomScrollView(
-        physics: const AlwaysScrollableScrollPhysics(
-          parent: BouncingScrollPhysics(),
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Color(0xFFE8F5EE), // Mint hijau lembut
+            Color(0xFFF7FAF8), // Off-white sejuk
+            Color(0xFFEDF7F2), // Hijau sangat muda
+          ],
+          stops: [0.0, 0.5, 1.0],
         ),
+      ),
+      child: RefreshIndicator(
+        color: AppTheme.primaryDark,
+        backgroundColor: Colors.white,
+        onRefresh: () => sensorProvider.init(),
+        child: CustomScrollView(
+          physics: const AlwaysScrollableScrollPhysics(
+            parent: BouncingScrollPhysics(),
+          ),
         slivers: [
           // ─── App Bar ──────────────────────────────────────────
           SliverToBoxAdapter(
@@ -187,6 +200,7 @@ class HomeScreen extends StatelessWidget {
             ),
           ),
         ],
+        ),
       ),
     );
   }

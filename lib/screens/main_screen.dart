@@ -42,20 +42,20 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
 
   void _onItemTapped(int index) {
     HapticFeedback.selectionClick();
-    // Clear alert badge when user visits Alerts tab
-    if (index == 2 && _hasUnreadAlert) {
-      setState(() => _hasUnreadAlert = false);
-    } else {
-      setState(() => _selectedIndex = index);
-    }
-    setState(() => _selectedIndex = index);
+    setState(() {
+      _selectedIndex = index;
+      // Clear alert badge when user visits Alerts tab
+      if (index == 2 && _hasUnreadAlert) {
+        _hasUnreadAlert = false;
+      }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.background,
-      extendBody: true,
+      extendBody: false,
       body: IndexedStack(
         index: _selectedIndex,
         children: _screens,

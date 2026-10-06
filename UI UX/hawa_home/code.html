@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { colors: { "on-secondary-fixed": "#002112", "inverse-primary": "#97d4a9", "on-primary-container": "#95d2a7", "tertiary-container": "#005e37", "surface-container": "#d4f5e5", "secondary-fixed": "#bfedcf", "on-primary-fixed-variant": "#135130", "on-secondary-fixed-variant": "#264f39", "error": "#ba1a1a", "on-tertiary-container": "#82d6a2", "background": "#e7fff2", "tertiary-fixed": "#9ff5bf", "surface": "#e7fff2", "primary": "#004425", "error-container": "#ffdad6", "outline": "#707971", "outline-variant": "#c0c9bf", "on-surface-variant": "#404942", "surface-variant": "#c9ead9", "surface-tint": "#2f6a46", "primary-container": "#205c3a", "inverse-on-surface": "#d7f8e8", "on-secondary": "#ffffff", "secondary-container": "#bfedcf", "surface-bright": "#e7fff2", "on-primary": "#ffffff", "on-secondary-container": "#446d55", "on-error": "#ffffff", "tertiary": "#004427", "on-primary-fixed": "#00210f", "surface-container-lowest": "#ffffff", "on-surface": "#022016", "on-tertiary": "#ffffff", "surface-container-highest": "#c9ead9", "surface-dim": "#c1e1d1", "on-error-container": "#93000a", "secondary": "#3e674f", "tertiary-fixed-dim": "#84d8a4", "primary-fixed": "#b2f1c4", "on-tertiary-fixed-variant": "#005230", "inverse-surface": "#19362b", "surface-container-low": "#dafbea", "on-tertiary-fixed": "#002110", "secondary-fixed-dim": "#a4d1b4", "primary-fixed-dim": "#97d4a9", "on-background": "#022016", "surface-container-high": "#cff0df" }, borderRadius: { "DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px" }, spacing: { "gutter-mobile": "1rem", "space-lg": "1.5rem", "margin": "3rem", "space-xl": "2.5rem", "gutter": "1.5rem", "space-xs": "0.25rem", "space-sm": "0.5rem", "margin-mobile": "1.25rem", "space-md": "1rem" }, fontFamily: { "label-caps": ["Outfit"], "body-md": ["Outfit"], "headline-lg": ["Outfit"], "display-hero-mobile": ["Outfit"], "headline-metric": ["Outfit"], "headline-metric-mobile": ["Outfit"], "status-pill": ["Outfit"], "title-sm": ["Outfit"], "display-hero": ["Outfit"], "body-lg": ["Outfit"], "headline-md": ["Outfit"] }, fontSize: { "label-caps": ["11px", { "lineHeight": "14px", "letterSpacing": "0.06em", "fontWeight": "600" }], "body-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0em", "fontWeight": "400" }], "headline-lg": ["28px", { "lineHeight": "36px", "letterSpacing": "-0.01em", "fontWeight": "600" }], "display-hero-mobile": ["44px", { "lineHeight": "52px", "letterSpacing": "-0.02em", "fontWeight": "700" }], "headline-metric": ["40px", { "lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "700" }], "headline-metric-mobile": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700" }], "status-pill": ["13px", { "lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "500" }], "title-sm": ["18px", { "lineHeight": "26px", "letterSpacing": "0em", "fontWeight": "600" }], "display-hero": ["64px", { "lineHeight": "72px", "letterSpacing": "-0.03em", "fontWeight": "700" }], "body-lg": ["16px", { "lineHeight": "24px", "letterSpacing": "0em", "fontWeight": "400" }], "headline-md": ["22px", { "lineHeight": "30px", "letterSpacing": "0em", "fontWeight": "600" }] } } } };</script><style>@layer base{html,body{width:100vw;margin:0;padding:0;}body{overscroll-behavior:none;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head><body class="bg-surface text-on-surface font-body-md text-body-md flex flex-col min-h-screen"><header class="fixed top-0 w-full z-50 pt-safe bg-surface/80 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="h-16 px-gutter-mobile flex items-center justify-between"><div class="flex items-center gap-space-sm"><div class="w-3 h-3 rounded-full bg-primary-container animate-pulse"></div><span class="font-headline-md text-headline-md tracking-tight text-on-surface">Home</span></div><div class="flex items-center gap-space-sm"><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="flex-1 flex flex-col relative w-full pt-16 pb-24 bg-surface px-gutter-mobile"><div class="flex flex-col w-full space-y-space-md">
+<!-- Minimalist Title Header (Within Main Slot) -->
+<div class="flex items-end justify-between px-space-xs pt-space-xs">
+<div>
+<h1 class="font-headline-lg text-headline-lg text-primary tracking-tight">Hawa</h1>
+<p class="font-body-md text-body-md text-secondary tracking-normal">Air Quality</p>
+</div>
+<div class="flex items-center gap-space-xs bg-surface-container-high px-space-md py-space-xs rounded-full shadow-sm">
+<span class="w-2 h-2 rounded-full bg-primary-container animate-ping"></span>
+<span class="font-label-caps text-label-caps text-primary uppercase">Live Sync</span>
+</div>
+</div>
+<!-- Main Condition Focal Card -->
+<div class="w-full bg-surface-container-lowest rounded-lg p-space-lg shadow-sm flex flex-col items-center justify-center relative overflow-hidden">
+<!-- Subtle Ambient Backdrop Radial -->
+<div class="absolute -top-16 -right-16 w-44 h-44 rounded-full bg-secondary-fixed/30 blur-2xl pointer-events-none"></div>
+<!-- Status Pill -->
+<div class="inline-flex items-center gap-space-xs px-space-md py-space-xs rounded-full bg-surface-container text-primary-container mb-space-sm">
+<span class="w-2.5 h-2.5 rounded-full bg-primary-container"></span>
+<span class="font-status-pill text-status-pill font-semibold uppercase tracking-wider">Good Air Today</span>
+</div>
+<!-- Dominant Focal Metric -->
+<div class="flex flex-col items-center justify-center my-space-xs">
+<span class="font-display-hero-mobile text-display-hero-mobile text-primary leading-none tracking-tight">18</span>
+<div class="flex items-center gap-space-xs mt-space-xs">
+<span class="font-title-sm text-title-sm text-secondary font-medium">PM2.5</span>
+<span class="font-label-caps text-label-caps text-secondary/70">µg/m³</span>
+</div>
+</div>
+<!-- Sub-status Summary Pill Bar -->
+<div class="mt-space-md w-full max-w-[240px] bg-surface-container-low py-space-xs px-space-md rounded-full flex items-center justify-between">
+<span class="font-label-caps text-label-caps text-secondary font-medium">Facility Health</span>
+<span class="font-label-caps text-label-caps text-primary font-bold">3 of 4 Normal</span>
+</div>
+</div>
+<!-- Data Bubbles Row (4 Compact Metrics) -->
+<div class="grid grid-cols-4 gap-space-xs">
+<!-- Bubble 1 -->
+<div class="bg-surface-container-lowest rounded-DEFAULT p-space-sm shadow-sm flex flex-col items-center justify-center text-center">
+<span class="font-title-sm text-title-sm text-primary font-bold leading-tight">18</span>
+<span class="font-label-caps text-label-caps text-secondary mt-space-xs">PM2.5</span>
+</div>
+<!-- Bubble 2 -->
+<div class="bg-surface-container-lowest rounded-DEFAULT p-space-sm shadow-sm flex flex-col items-center justify-center text-center">
+<span class="font-title-sm text-title-sm text-primary font-bold leading-tight">24</span>
+<span class="font-label-caps text-label-caps text-secondary mt-space-xs">PM10</span>
+</div>
+<!-- Bubble 3 -->
+<div class="bg-surface-container-lowest rounded-DEFAULT p-space-sm shadow-sm flex flex-col items-center justify-center text-center">
+<span class="font-title-sm text-title-sm text-primary font-bold leading-tight">24°</span>
+<span class="font-label-caps text-label-caps text-secondary mt-space-xs">Temp</span>
+</div>
+<!-- Bubble 4 -->
+<div class="bg-surface-container-lowest rounded-DEFAULT p-space-sm shadow-sm flex flex-col items-center justify-center text-center">
+<span class="font-title-sm text-title-sm text-primary font-bold leading-tight">58%</span>
+<span class="font-label-caps text-label-caps text-secondary mt-space-xs">Humid</span>
+</div>
+</div>
+<!-- Zones Section -->
+<div class="flex flex-col space-y-space-sm pt-space-xs">
+<div class="flex items-center justify-between px-space-xs">
+<h2 class="font-title-sm text-title-sm text-primary font-semibold">Zones</h2>
+<span class="font-label-caps text-label-caps text-secondary font-medium">Real-time Readings</span>
+</div>
+<!-- Zone Cards Stream -->
+<div class="flex flex-col space-y-space-sm">
+<!-- Zone 01: Main Gate -->
+<div class="w-full bg-surface-container-lowest rounded-DEFAULT p-space-md shadow-sm flex items-center justify-between transition-transform active:scale-[0.99]">
+<div class="flex items-center gap-space-md min-w-0">
+<div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-primary text-[20px]">door_front</span>
+</div>
+<div class="min-w-0">
+<div class="font-body-md text-body-md text-primary font-semibold truncate">Zone 01 · Main Gate</div>
+<div class="flex items-center gap-space-xs mt-0.5">
+<span class="font-label-caps text-label-caps text-primary font-bold">18</span>
+<span class="font-label-caps text-label-caps text-secondary">µg/m³</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-space-md flex-shrink-0">
+<div class="flex items-center gap-1.5 px-space-sm py-0.5 rounded-full bg-surface-container-high">
+<span class="w-2 h-2 rounded-full bg-primary-container"></span>
+<span class="font-label-caps text-label-caps text-primary-container font-semibold">Normal</span>
+</div>
+<span class="material-symbols-outlined text-primary-container text-[18px]">trending_up</span>
+</div>
+</div>
+<!-- Zone 02: Workshop -->
+<div class="w-full bg-surface-container-lowest rounded-DEFAULT p-space-md shadow-sm flex items-center justify-between transition-transform active:scale-[0.99]">
+<div class="flex items-center gap-space-md min-w-0">
+<div class="w-10 h-10 rounded-full bg-error-container/40 flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-on-error-container text-[20px]">handyman</span>
+</div>
+<div class="min-w-0">
+<div class="font-body-md text-body-md text-primary font-semibold truncate">Zone 02 · Workshop</div>
+<div class="flex items-center gap-space-xs mt-0.5">
+<span class="font-label-caps text-label-caps text-on-error-container font-bold">42</span>
+<span class="font-label-caps text-label-caps text-secondary">µg/m³</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-space-md flex-shrink-0">
+<div class="flex items-center gap-1.5 px-space-sm py-0.5 rounded-full bg-error-container">
+<span class="w-2 h-2 rounded-full bg-error"></span>
+<span class="font-label-caps text-label-caps text-on-error-container font-semibold">Warning</span>
+</div>
+<span class="material-symbols-outlined text-error text-[18px]">north</span>
+</div>
+</div>
+<!-- Zone 03: Research Lab -->
+<div class="w-full bg-surface-container-lowest rounded-DEFAULT p-space-md shadow-sm flex items-center justify-between transition-transform active:scale-[0.99]">
+<div class="flex items-center gap-space-md min-w-0">
+<div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-primary text-[20px]">science</span>
+</div>
+<div class="min-w-0">
+<div class="font-body-md text-body-md text-primary font-semibold truncate">Zone 03 · Research Lab</div>
+<div class="flex items-center gap-space-xs mt-0.5">
+<span class="font-label-caps text-label-caps text-primary font-bold">21</span>
+<span class="font-label-caps text-label-caps text-secondary">µg/m³</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-space-md flex-shrink-0">
+<div class="flex items-center gap-1.5 px-space-sm py-0.5 rounded-full bg-surface-container-high">
+<span class="w-2 h-2 rounded-full bg-primary-container"></span>
+<span class="font-label-caps text-label-caps text-primary-container font-semibold">Normal</span>
+</div>
+<span class="material-symbols-outlined text-primary text-[18px]">east</span>
+</div>
+</div>
+<!-- Zone 04: Perimeter -->
+<div class="w-full bg-surface-container-lowest rounded-DEFAULT p-space-md shadow-sm flex items-center justify-between transition-transform active:scale-[0.99]">
+<div class="flex items-center gap-space-md min-w-0">
+<div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-primary text-[20px]">park</span>
+</div>
+<div class="min-w-0">
+<div class="font-body-md text-body-md text-primary font-semibold truncate">Zone 04 · Perimeter</div>
+<div class="flex items-center gap-space-xs mt-0.5">
+<span class="font-label-caps text-label-caps text-primary font-bold">14</span>
+<span class="font-label-caps text-label-caps text-secondary">µg/m³</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-space-md flex-shrink-0">
+<div class="flex items-center gap-1.5 px-space-sm py-0.5 rounded-full bg-surface-container-high">
+<span class="w-2 h-2 rounded-full bg-primary-container"></span>
+<span class="font-label-caps text-label-caps text-primary-container font-semibold">Normal</span>
+</div>
+<span class="material-symbols-outlined text-primary-container text-[18px]">trending_down</span>
+</div>
+</div>
+</div>
+</div>
+</div></main><nav class="fixed bottom-0 w-full z-50 pb-safe bg-surface/80 backdrop-blur-xl shadow-[0_-2px_12px_rgba(24,53,42,0.04)]" data-active-classes="text-primary-container font-semibold"><div class="flex justify-around items-center h-16 px-space-xs"><a aria-current="page" class="flex flex-col items-center justify-center min-w-[48px] min-h-[48px] px-space-xs gap-space-xs transition-colors text-primary-container font-semibold" data-path="home" href="#"><span class="material-symbols-outlined text-[24px]">home</span><span class="font-status-pill text-status-pill text-[11px] leading-tight">Home</span></a><a class="flex flex-col items-center justify-center min-w-[48px] min-h-[48px] px-space-xs gap-space-xs text-on-surface-variant hover:text-on-surface transition-colors" data-path="zones" href="#"><span class="material-symbols-outlined text-[24px]">grid_view</span><span class="font-status-pill text-status-pill text-[11px] leading-tight">Zones</span></a><a class="flex flex-col items-center justify-center min-w-[48px] min-h-[48px] px-space-xs gap-space-xs text-on-surface-variant hover:text-on-surface transition-colors" data-path="alerts" href="#"><span class="material-symbols-outlined text-[24px]">notifications</span><span class="font-status-pill text-status-pill text-[11px] leading-tight">Alerts</span></a><a class="flex flex-col items-center justify-center min-w-[48px] min-h-[48px] px-space-xs gap-space-xs text-on-surface-variant hover:text-on-surface transition-colors" data-path="history" href="#"><span class="material-symbols-outlined text-[24px]">show_chart</span><span class="font-status-pill text-status-pill text-[11px] leading-tight">History</span></a><a class="flex flex-col items-center justify-center min-w-[48px] min-h-[48px] px-space-xs gap-space-xs text-on-surface-variant hover:text-on-surface transition-colors" data-path="nodes" href="#"><span class="material-symbols-outlined text-[24px]">sensors</span><span class="font-status-pill text-status-pill text-[11px] leading-tight">Nodes</span></a></div></nav></body></html>
