@@ -10,10 +10,9 @@ class ZonesScreen extends StatefulWidget {
 
 class _ZonesScreenState extends State<ZonesScreen> {
   static const List<Map<String, dynamic>> _zones = [
-    {'id': 1, 'name': 'Zone 01', 'location': 'Main Gate', 'pm25': 18, 'pm10': 22, 'temp': 26, 'humidity': 60, 'status': 'Normal', 'icon': Icons.door_front_door_outlined},
-    {'id': 2, 'name': 'Zone 02', 'location': 'Workshop', 'pm25': 42, 'pm10': 38, 'temp': 24, 'humidity': 58, 'status': 'Warning', 'icon': Icons.handyman_outlined},
-    {'id': 3, 'name': 'Zone 03', 'location': 'Research Lab', 'pm25': 21, 'pm10': 25, 'temp': 22, 'humidity': 55, 'status': 'Normal', 'icon': Icons.science_outlined},
-    {'id': 4, 'name': 'Zone 04', 'location': 'Perimeter', 'pm25': 14, 'pm10': 18, 'temp': 28, 'humidity': 62, 'status': 'Normal', 'icon': Icons.park_outlined},
+    {'id': 1, 'name': 'Zone 01', 'location': 'Area TPS3R', 'pm25': 18, 'pm10': 22, 'temp': 26, 'humidity': 60, 'status': 'Normal', 'icon': Icons.recycling_rounded},
+    {'id': 2, 'name': 'Zone 02', 'location': 'Taman Bunga Hortensia', 'pm25': 42, 'pm10': 38, 'temp': 24, 'humidity': 58, 'status': 'Warning', 'icon': Icons.local_florist_rounded},
+    {'id': 3, 'name': 'Zone 03', 'location': 'Sawang Alam Cafe', 'pm25': 21, 'pm10': 25, 'temp': 22, 'humidity': 55, 'status': 'Normal', 'icon': Icons.coffee_rounded},
   ];
 
   int? _selectedZoneId;
@@ -25,41 +24,69 @@ class _ZonesScreenState extends State<ZonesScreen> {
       return _ZoneDetailView(zone: zone, onBack: () => setState(() => _selectedZoneId = null));
     }
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.only(left: 20, right: 20, top: 72, bottom: 100),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Header
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Zones',
-                    style: TextStyle(fontSize: 28, fontWeight: FontWeight.w600, color: AppTheme.onSurface, letterSpacing: -0.5),
-                  ),
-                  Text(
-                    'Monitor each zone',
-                    style: TextStyle(fontSize: 14, color: Color(0xFF404942)),
-                  ),
-                ],
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(color: AppTheme.surfaceContainerHigh, borderRadius: BorderRadius.circular(20)),
-                child: Row(
+    return SafeArea(
+      bottom: false,
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.only(left: 20, right: 20, top: 16, bottom: 100),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Container(width: 8, height: 8, decoration: const BoxDecoration(color: AppTheme.primaryContainer, shape: BoxShape.circle)),
-                    const SizedBox(width: 6),
-                    const Text('4 Active', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppTheme.primary)),
+                    Text(
+                      'Zones',
+                      style: AppTheme.font(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w700,
+                        color: AppTheme.primaryDark,
+                        letterSpacing: -0.5,
+                      ),
+                    ),
+                    Text(
+                      'Monitor each zone',
+                      style: AppTheme.font(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                        color: AppTheme.textSecondary,
+                      ),
+                    ),
                   ],
                 ),
-              ),
-            ],
-          ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: AppTheme.mintContainer,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 8,
+                        height: 8,
+                        decoration: const BoxDecoration(
+                          color: AppTheme.success,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        '3 Active',
+                        style: AppTheme.font(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color: AppTheme.primaryDark,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           const SizedBox(height: 24),
 
           // Zone Cards — tappable
@@ -76,8 +103,9 @@ class _ZonesScreenState extends State<ZonesScreen> {
           }),
         ],
       ),
-    );
-  }
+    ),
+  );
+}
 }
 
 class _ZoneListCard extends StatefulWidget {
@@ -112,14 +140,16 @@ class _ZoneListCardState extends State<_ZoneListCard> with SingleTickerProviderS
   Widget build(BuildContext context) {
     final z = widget.zone;
     final isWarning = widget.isWarning;
-    return GestureDetector(
-      onTapDown: (_) => _controller.forward(),
-      onTapUp: (_) => _controller.reverse(),
-      onTapCancel: () => _controller.reverse(),
-      onTap: widget.onTap,
-      child: ScaleTransition(
-        scale: _scaleAnim,
-        child: Container(
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        onTapDown: (_) => _controller.forward(),
+        onTapUp: (_) => _controller.reverse(),
+        onTapCancel: () => _controller.reverse(),
+        onTap: widget.onTap,
+        child: ScaleTransition(
+          scale: _scaleAnim,
+          child: Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             color: AppTheme.surfaceContainerLowest,
@@ -130,42 +160,44 @@ class _ZoneListCardState extends State<_ZoneListCard> with SingleTickerProviderS
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: [
-                  Container(
-                    width: 44,
-                    height: 44,
-                    decoration: BoxDecoration(
-                      color: isWarning ? AppTheme.errorContainer.withValues(alpha: 0.4) : AppTheme.surfaceContainerLow,
-                      shape: BoxShape.circle,
+              Expanded(
+                child: Row(
+                  children: [
+                    Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        color: isWarning ? AppTheme.errorContainer.withValues(alpha: 0.4) : AppTheme.surfaceContainerLow,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(z['icon'] as IconData, color: isWarning ? AppTheme.onErrorContainer : AppTheme.primary, size: 22),
                     ),
-                    child: Icon(z['icon'] as IconData, color: isWarning ? AppTheme.onErrorContainer : AppTheme.primary, size: 22),
-                  ),
-                  const SizedBox(width: 14),
-                  Flexible(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          '${z['name']} · ${z['location']}',
-                          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppTheme.onSurface),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        const SizedBox(height: 2),
-                        Row(
-                          children: [
-                            Text(
-                              '${z['pm25']}',
-                              style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: isWarning ? AppTheme.onErrorContainer : AppTheme.primary),
-                            ),
-                            const Text(' µg/m³ PM2.5', style: TextStyle(fontSize: 11, color: Color(0xFF404942))),
-                          ],
-                        ),
-                      ],
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '${z['name']} · ${z['location']}',
+                            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppTheme.onSurface),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 2),
+                          Row(
+                            children: [
+                              Text(
+                                '${z['pm25']}',
+                                style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: isWarning ? AppTheme.onErrorContainer : AppTheme.primary),
+                              ),
+                              const Text(' µg/m³ PM2.5', style: TextStyle(fontSize: 11, color: Color(0xFF404942))),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
               Row(
                 children: [
@@ -205,8 +237,9 @@ class _ZoneListCardState extends State<_ZoneListCard> with SingleTickerProviderS
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 }
 
 // Full Zone Detail View (replaces the screen body)

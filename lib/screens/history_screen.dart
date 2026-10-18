@@ -23,56 +23,62 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.only(left: 20, right: 20, top: 100, bottom: 100),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Top Bar: Dropdown & Calendar
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: InkWell(
-                  onTap: () {
-                    showModalBottomSheet(
-                      context: context,
-                      shape: const RoundedRectangleBorder(
-                        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-                      ),
-                      builder: (_) => _ZoneSelectorSheet(),
-                    );
-                  },
-                  borderRadius: BorderRadius.circular(24),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                    decoration: BoxDecoration(
-                      color: AppTheme.surfaceContainerLowest,
-                      borderRadius: BorderRadius.circular(24),
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFF18352A).withValues(alpha: 0.05),
-                          blurRadius: 16,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.location_on, color: AppTheme.primary, size: 18),
-                        const SizedBox(width: 8),
-                        const Expanded(
-                          child: Text(
-                            'Zone 02 — Workshop',
-                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppTheme.onSurface),
+    return SafeArea(
+      bottom: false,
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.only(left: 20, right: 20, top: 16, bottom: 100),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Top Bar: Dropdown & Calendar
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: MouseRegion(
+                    cursor: SystemMouseCursors.click,
+                    child: InkWell(
+                      onTap: () {
+                        showModalBottomSheet(
+                          context: context,
+                          shape: const RoundedRectangleBorder(
+                            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
                           ),
+                          builder: (_) => _ZoneSelectorSheet(),
+                        );
+                      },
+                      borderRadius: BorderRadius.circular(24),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(24),
+                          border: Border.all(color: AppTheme.borderLight),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppTheme.primaryDark.withValues(alpha: 0.04),
+                              blurRadius: 12,
+                              offset: const Offset(0, 3),
+                            ),
+                          ],
                         ),
-                        const Icon(Icons.expand_more, color: Color(0xFF404942), size: 18),
-                      ],
+                        child: Row(
+                          children: [
+                            const Icon(Icons.location_on, color: AppTheme.primaryDark, size: 18),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                'Zone 02 — Workshop',
+                                style: AppTheme.font(fontSize: 13, fontWeight: FontWeight.w600, color: AppTheme.primaryDark),
+                              ),
+                            ),
+                            const Icon(Icons.expand_more, color: AppTheme.textSecondary, size: 18),
+                          ],
+                        ),
+                      ),
                     ),
                   ),
                 ),
-              ),
               const SizedBox(width: 12),
               InkWell(
                 onTap: () {},
@@ -385,12 +391,17 @@ class _HistoryScreenState extends State<HistoryScreen> {
           ),
         ],
       ),
-    );
-  }
+    ),
+  );
+}
 }
 
 class _ZoneSelectorSheet extends StatelessWidget {
-  final List<String> zones = ['Zone 01 — Main Gate', 'Zone 02 — Workshop', 'Zone 03 — Research Lab', 'Zone 04 — Perimeter'];
+  final List<String> zones = [
+    'Zone 01 — Area TPS3R',
+    'Zone 02 — Taman Bunga Hortensia',
+    'Zone 03 — Sawang Alam Cafe',
+  ];
 
   _ZoneSelectorSheet();
 

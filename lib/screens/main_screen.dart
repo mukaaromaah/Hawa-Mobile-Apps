@@ -19,13 +19,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
   // Alert badge: shown on Alerts tab (index 2) until user visits it
   bool _hasUnreadAlert = true;
 
-  final List<Widget> _screens = const [
-    HomeScreen(),
-    ZonesScreen(),
-    AlertsScreen(),
-    HistoryScreen(),
-    NodesScreen(),
-  ];
+  late final List<Widget> _screens;
 
   final List<({IconData icon, IconData activeIcon, String label})> _navItems = [
     (icon: Icons.home_outlined, activeIcon: Icons.home_rounded, label: 'Home'),
@@ -38,6 +32,13 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
+    _screens = [
+      HomeScreen(onNavigateToTab: _onItemTapped),
+      const ZonesScreen(),
+      const AlertsScreen(),
+      const HistoryScreen(),
+      const NodesScreen(),
+    ];
   }
 
   void _onItemTapped(int index) {
@@ -56,10 +57,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     return Scaffold(
       backgroundColor: AppTheme.background,
       extendBody: false,
-      body: IndexedStack(
-        index: _selectedIndex,
-        children: _screens,
-      ),
+      body: _screens[_selectedIndex],
       bottomNavigationBar: _buildFloatingPillDock(),
     );
   }
@@ -89,60 +87,63 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
             // Show badge on Alerts tab (index 2) when unread
             final showBadge = index == 2 && _hasUnreadAlert;
 
-            return GestureDetector(
-              onTap: () => _onItemTapped(index),
-              behavior: HitTestBehavior.opaque,
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                curve: Curves.easeOut,
-                padding: EdgeInsets.symmetric(
-                  horizontal: isSelected ? 14 : 10,
-                  vertical: 9,
-                ),
-                decoration: BoxDecoration(
-                  color: isSelected ? AppTheme.accentGreen : Colors.transparent,
-                  borderRadius: BorderRadius.circular(30),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Stack(
-                      clipBehavior: Clip.none,
-                      children: [
-                        Icon(
-                          isSelected ? item.activeIcon : item.icon,
-                          color: isSelected
-                              ? AppTheme.primaryDark
-                              : Colors.white.withValues(alpha: 0.5),
-                          size: 22,
-                        ),
-                        if (showBadge)
-                          Positioned(
-                            top: -3,
-                            right: -3,
-                            child: Container(
-                              width: 8,
-                              height: 8,
-                              decoration: const BoxDecoration(
-                                color: AppTheme.error,
-                                shape: BoxShape.circle,
+            return MouseRegion(
+              cursor: SystemMouseCursors.click,
+              child: GestureDetector(
+                onTap: () => _onItemTapped(index),
+                behavior: HitTestBehavior.opaque,
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  curve: Curves.easeOut,
+                  padding: EdgeInsets.symmetric(
+                    horizontal: isSelected ? 14 : 10,
+                    vertical: 9,
+                  ),
+                  decoration: BoxDecoration(
+                    color: isSelected ? AppTheme.accentGreen : Colors.transparent,
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          Icon(
+                            isSelected ? item.activeIcon : item.icon,
+                            color: isSelected
+                                ? AppTheme.primaryDark
+                                : Colors.white.withValues(alpha: 0.5),
+                            size: 22,
+                          ),
+                          if (showBadge)
+                            Positioned(
+                              top: -3,
+                              right: -3,
+                              child: Container(
+                                width: 8,
+                                height: 8,
+                                decoration: const BoxDecoration(
+                                  color: AppTheme.error,
+                                  shape: BoxShape.circle,
+                                ),
                               ),
                             ),
-                          ),
-                      ],
-                    ),
-                    if (isSelected) ...[
-                      const SizedBox(width: 6),
-                      Text(
-                        item.label,
-                        style: AppTheme.font(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: AppTheme.primaryDark,
-                        ),
+                        ],
                       ),
+                      if (isSelected) ...[
+                        const SizedBox(width: 6),
+                        Text(
+                          item.label,
+                          style: AppTheme.font(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: AppTheme.primaryDark,
+                          ),
+                        ),
+                      ],
                     ],
-                  ],
+                  ),
                 ),
               ),
             );

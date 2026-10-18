@@ -6,7 +6,9 @@ import 'package:hawa_mobile/providers/sensor_provider.dart';
 import 'package:hawa_mobile/theme/app_theme.dart';
 
 class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
+  final ValueChanged<int>? onNavigateToTab;
+
+  const HomeScreen({super.key, this.onNavigateToTab});
 
   @override
   Widget build(BuildContext context) {
@@ -155,14 +157,17 @@ class HomeScreen extends StatelessWidget {
                         color: AppTheme.primaryDark,
                       ),
                     ),
-                    GestureDetector(
-                      onTap: () {},
-                      child: Text(
-                        'Lihat Semua →',
-                        style: AppTheme.font(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: AppTheme.textSecondary,
+                    MouseRegion(
+                      cursor: SystemMouseCursors.click,
+                      child: GestureDetector(
+                        onTap: () => onNavigateToTab?.call(1),
+                        child: Text(
+                          'Lihat Semua →',
+                          style: AppTheme.font(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: AppTheme.textSecondary,
+                          ),
                         ),
                       ),
                     ),
@@ -172,17 +177,19 @@ class HomeScreen extends StatelessWidget {
 
                 // ── Zone Cards (only 2 primary) ───────────────────
                 _ZoneCard(
-                  zoneName: 'Zona 01 · Gerbang Utama',
-                  icon: Icons.door_front_door_outlined,
+                  zoneName: 'Zona 01 · Area TPS3R',
+                  icon: Icons.recycling_rounded,
                   pm25: pm25Value,
                   status: data.status,
+                  onTap: () => onNavigateToTab?.call(1),
                 ),
                 const SizedBox(height: 12),
                 _ZoneCard(
-                  zoneName: 'Zona 02 · Workshop',
-                  icon: Icons.handyman_outlined,
+                  zoneName: 'Zona 02 · Taman Bunga Hortensia',
+                  icon: Icons.local_florist_rounded,
                   pm25: 42,
                   status: AirQualityStatus.warning,
+                  onTap: () => onNavigateToTab?.call(1),
                 ),
                 const SizedBox(height: 20),
 
@@ -581,12 +588,14 @@ class _ZoneCard extends StatelessWidget {
   final IconData icon;
   final int pm25;
   final AirQualityStatus status;
+  final VoidCallback? onTap;
 
   const _ZoneCard({
     required this.zoneName,
     required this.icon,
     required this.pm25,
     required this.status,
+    this.onTap,
   });
 
   @override
@@ -601,29 +610,33 @@ class _ZoneCard extends StatelessWidget {
         ? AppTheme.errorContainer
         : (isWarning ? AppTheme.warningContainer : AppTheme.mintContainer);
 
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(20),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.78),
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(
-              color: Colors.white.withValues(alpha: 0.9),
-              width: 1.2,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: AppTheme.primaryDark.withValues(alpha: 0.04),
-                blurRadius: 10,
-                offset: const Offset(0, 3),
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        onTap: onTap,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(20),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.78),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.9),
+                  width: 1.2,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppTheme.primaryDark.withValues(alpha: 0.04),
+                    blurRadius: 10,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
               ),
-            ],
-          ),
-          child: Row(
-            children: [
+              child: Row(
+                children: [
               // Icon
               Container(
                 width: 44,
@@ -679,6 +692,8 @@ class _ZoneCard extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
+    ),
+  ),
+);
+}
 }
