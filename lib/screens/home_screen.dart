@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:hawa_mobile/models/sensor_data.dart';
 import 'package:hawa_mobile/providers/sensor_provider.dart';
+import 'package:hawa_mobile/screens/profile_screen.dart';
 import 'package:hawa_mobile/theme/app_theme.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -79,16 +80,46 @@ class HomeScreen extends StatelessWidget {
                                 : null,
                           ),
                         ),
-                        // Avatar
-                        Container(
-                          width: 38,
-                          height: 38,
-                          decoration: BoxDecoration(
-                            color: AppTheme.primaryDark,
-                            shape: BoxShape.circle,
-                            border: Border.all(color: Colors.white, width: 2),
+                        // Avatar -> ProfileScreen
+                        MouseRegion(
+                          cursor: SystemMouseCursors.click,
+                          child: GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                PageRouteBuilder(
+                                  transitionDuration: const Duration(milliseconds: 300),
+                                  pageBuilder: (context, animation, secondaryAnimation) => const ProfileScreen(),
+                                  transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                                    return SlideTransition(
+                                      position: Tween<Offset>(
+                                        begin: const Offset(0.05, 0),
+                                        end: Offset.zero,
+                                      ).animate(CurvedAnimation(parent: animation, curve: Curves.easeOutCubic)),
+                                      child: FadeTransition(opacity: animation, child: child),
+                                    );
+                                  },
+                                ),
+                              );
+                            },
+                            child: Container(
+                              width: 38,
+                              height: 38,
+                              decoration: BoxDecoration(
+                                color: AppTheme.primaryDark,
+                                shape: BoxShape.circle,
+                                border: Border.all(color: Colors.white, width: 2),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: AppTheme.primaryDark.withValues(alpha: 0.15),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: const Icon(Icons.person_rounded, color: Colors.white, size: 20),
+                            ),
                           ),
-                          child: const Icon(Icons.person_rounded, color: Colors.white, size: 20),
                         ),
                       ],
                     ),

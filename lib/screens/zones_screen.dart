@@ -253,53 +253,65 @@ class _ZoneDetailView extends StatelessWidget {
   Widget build(BuildContext context) {
     final isWarning = zone['status'] == 'Warning';
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.only(left: 20, right: 20, top: 16, bottom: 100),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const SizedBox(height: 80), // Space for AppBar
+    return SafeArea(
+      bottom: false,
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.only(left: 20, right: 20, top: 16, bottom: 100),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
 
           // Back button + Zone title
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: [
-                  GestureDetector(
-                    onTap: onBack,
-                    child: Container(
-                      width: 40,
-                      height: 40,
-                      decoration: const BoxDecoration(color: AppTheme.surfaceContainerLow, shape: BoxShape.circle),
-                      child: const Icon(Icons.arrow_back, color: AppTheme.onSurface, size: 22),
-                    ),
+              MouseRegion(
+                cursor: SystemMouseCursors.click,
+                child: GestureDetector(
+                  onTap: onBack,
+                  child: Container(
+                    width: 36,
+                    height: 36,
+                    decoration: const BoxDecoration(color: AppTheme.surfaceContainerLow, shape: BoxShape.circle),
+                    child: const Icon(Icons.arrow_back, color: AppTheme.onSurface, size: 20),
                   ),
-                  const SizedBox(width: 12),
-                  Container(
-                    width: 48,
-                    height: 48,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFBFEDCF).withValues(alpha: 0.6),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(zone['icon'] as IconData, color: AppTheme.primary, size: 24),
-                  ),
-                  const SizedBox(width: 12),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(zone['name'] as String, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w600, color: AppTheme.onSurface)),
-                      Text('${zone['location']} Indoor Area', style: const TextStyle(fontSize: 14, color: Color(0xFF404942))),
-                    ],
-                  ),
-                ],
+                ),
               ),
+              const SizedBox(width: 10),
               Container(
-                width: 36,
-                height: 36,
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFBFEDCF).withValues(alpha: 0.6),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(zone['icon'] as IconData, color: AppTheme.primary, size: 22),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      zone['name'] as String,
+                      style: AppTheme.font(fontSize: 18, fontWeight: FontWeight.w700, color: AppTheme.primaryDark),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    Text(
+                      zone['location'] as String,
+                      style: AppTheme.font(fontSize: 12, color: AppTheme.textSecondary),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              Container(
+                width: 32,
+                height: 32,
                 decoration: const BoxDecoration(color: AppTheme.surfaceContainer, shape: BoxShape.circle),
-                child: const Icon(Icons.more_vert, color: AppTheme.primary, size: 20),
+                child: const Icon(Icons.more_vert, color: AppTheme.primary, size: 18),
               ),
             ],
           ),
@@ -354,26 +366,29 @@ class _ZoneDetailView extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text('PARTICULATE MATTER', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFF404942), letterSpacing: 1.0)),
-                        const SizedBox(height: 4),
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.baseline,
-                          textBaseline: TextBaseline.alphabetic,
-                          children: [
-                            Text(
-                              '${zone['pm25']}',
-                              style: const TextStyle(fontSize: 44, fontWeight: FontWeight.bold, color: AppTheme.primary, height: 1.1, letterSpacing: -1),
-                            ),
-                            const SizedBox(width: 6),
-                            const Text('µg/m³', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Color(0xFF404942))),
-                          ],
-                        ),
-                        const Text('Fine respirable dust (PM2.5)', style: TextStyle(fontSize: 13, color: Color(0xFF404942))),
-                      ],
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('PARTICULATE MATTER', style: AppTheme.font(fontSize: 10, fontWeight: FontWeight.w600, color: AppTheme.textSecondary, letterSpacing: 1.0)),
+                          const SizedBox(height: 4),
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.baseline,
+                            textBaseline: TextBaseline.alphabetic,
+                            children: [
+                              Text(
+                                '${zone['pm25']}',
+                                style: AppTheme.font(fontSize: 40, fontWeight: FontWeight.bold, color: AppTheme.primary, height: 1.1, letterSpacing: -1),
+                              ),
+                              const SizedBox(width: 6),
+                              Text('µg/m³', style: AppTheme.font(fontSize: 13, fontWeight: FontWeight.w500, color: AppTheme.textSecondary)),
+                            ],
+                          ),
+                          Text('Fine respirable dust (PM2.5)', style: AppTheme.font(fontSize: 12, color: AppTheme.textSecondary), maxLines: 1, overflow: TextOverflow.ellipsis),
+                        ],
+                      ),
                     ),
+                    const SizedBox(width: 8),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
@@ -381,14 +396,15 @@ class _ZoneDetailView extends StatelessWidget {
                         borderRadius: BorderRadius.circular(16),
                       ),
                       child: Row(
+                        mainAxisSize: MainAxisSize.min,
                         children: [
                           Icon(isWarning ? Icons.trending_up : Icons.trending_flat,
                               color: isWarning ? AppTheme.onErrorContainer : AppTheme.primaryContainer, size: 16),
                           const SizedBox(width: 4),
                           Text(
                             isWarning ? '+35%' : '-2%',
-                            style: TextStyle(
-                              fontSize: 13,
+                            style: AppTheme.font(
+                              fontSize: 12,
                               fontWeight: FontWeight.w600,
                               color: isWarning ? AppTheme.onErrorContainer : AppTheme.primaryContainer,
                             ),
@@ -456,10 +472,10 @@ class _ZoneDetailView extends StatelessWidget {
                     Expanded(
                       child: Row(
                         children: [
-                          const Icon(Icons.dynamic_form, color: AppTheme.primary, size: 20),
+                          const Icon(Icons.dynamic_form, color: AppTheme.primary, size: 18),
                           const SizedBox(width: 8),
-                          const Expanded(
-                            child: Text('Adaptive Monitoring', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppTheme.onSurface), overflow: TextOverflow.ellipsis),
+                          Expanded(
+                            child: Text('Adaptive Monitoring', style: AppTheme.font(fontSize: 14, fontWeight: FontWeight.w600, color: AppTheme.primaryDark), overflow: TextOverflow.ellipsis),
                           ),
                         ],
                       ),
@@ -492,22 +508,25 @@ class _ZoneDetailView extends StatelessWidget {
                   children: [
                     Expanded(
                       child: Container(
-                        padding: const EdgeInsets.all(14),
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                         decoration: BoxDecoration(color: AppTheme.surfaceContainerLow, borderRadius: BorderRadius.circular(16)),
                         child: Row(
                           children: [
                             Container(
-                              width: 36, height: 36,
+                              width: 34, height: 34,
                               decoration: const BoxDecoration(color: AppTheme.surfaceContainerLowest, shape: BoxShape.circle),
-                              child: const Icon(Icons.sensors, color: AppTheme.primary, size: 20),
+                              child: const Icon(Icons.sensors, color: AppTheme.primary, size: 18),
                             ),
-                            const SizedBox(width: 10),
-                            const Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text('SENSING', style: TextStyle(fontSize: 10, color: Color(0xFF404942), letterSpacing: 0.5)),
-                                Text('1 min', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.primary)),
-                              ],
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text('SENSING', style: AppTheme.font(fontSize: 10, fontWeight: FontWeight.w600, color: AppTheme.textSecondary, letterSpacing: 0.5)),
+                                  Text('1 min', style: AppTheme.font(fontSize: 15, fontWeight: FontWeight.bold, color: AppTheme.primaryDark), maxLines: 1, overflow: TextOverflow.ellipsis),
+                                ],
+                              ),
                             ),
                           ],
                         ),
@@ -516,22 +535,25 @@ class _ZoneDetailView extends StatelessWidget {
                     const SizedBox(width: 12),
                     Expanded(
                       child: Container(
-                        padding: const EdgeInsets.all(14),
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                         decoration: BoxDecoration(color: AppTheme.surfaceContainerLow, borderRadius: BorderRadius.circular(16)),
                         child: Row(
                           children: [
                             Container(
-                              width: 36, height: 36,
+                              width: 34, height: 34,
                               decoration: const BoxDecoration(color: AppTheme.surfaceContainerLowest, shape: BoxShape.circle),
-                              child: const Icon(Icons.cell_tower, color: AppTheme.primary, size: 20),
+                              child: const Icon(Icons.cell_tower, color: AppTheme.primary, size: 18),
                             ),
-                            const SizedBox(width: 10),
-                            const Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text('TRANSMIT', style: TextStyle(fontSize: 10, color: Color(0xFF404942), letterSpacing: 0.5)),
-                                Text('2 min', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.primary)),
-                              ],
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text('TRANSMIT', style: AppTheme.font(fontSize: 10, fontWeight: FontWeight.w600, color: AppTheme.textSecondary, letterSpacing: 0.5)),
+                                  Text('2 min', style: AppTheme.font(fontSize: 15, fontWeight: FontWeight.bold, color: AppTheme.primaryDark), maxLines: 1, overflow: TextOverflow.ellipsis),
+                                ],
+                              ),
                             ),
                           ],
                         ),
@@ -546,7 +568,7 @@ class _ZoneDetailView extends StatelessWidget {
 
           // Ventilation Recommendation Banner
           Container(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
               color: AppTheme.surfaceContainerHigh.withValues(alpha: 0.4),
               borderRadius: BorderRadius.circular(16),
@@ -554,34 +576,35 @@ class _ZoneDetailView extends StatelessWidget {
             child: Row(
               children: [
                 Container(
-                  width: 56, height: 56,
+                  width: 44, height: 44,
                   decoration: const BoxDecoration(color: AppTheme.surfaceContainer, shape: BoxShape.circle),
-                  child: const Icon(Icons.eco, color: AppTheme.primary, size: 28),
+                  child: const Icon(Icons.eco, color: AppTheme.primary, size: 24),
                 ),
-                const SizedBox(width: 16),
-                const Expanded(
+                const SizedBox(width: 12),
+                Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Ventilation Recommendation', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppTheme.primary)),
-                      SizedBox(height: 2),
+                      Text('Ventilation Recommendation', style: AppTheme.font(fontSize: 13, fontWeight: FontWeight.w600, color: AppTheme.primaryDark)),
+                      const SizedBox(height: 2),
                       Text(
                         'Cycle overhead intake fans for 15 minutes to clear particulate buildup.',
-                        style: TextStyle(fontSize: 13, color: Color(0xFF404942)),
+                        style: AppTheme.font(fontSize: 12, color: AppTheme.textSecondary),
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 10),
                 Container(
-                  width: 36, height: 36,
+                  width: 34, height: 34,
                   decoration: const BoxDecoration(color: AppTheme.primary, shape: BoxShape.circle),
-                  child: const Icon(Icons.air, color: Colors.white, size: 18),
+                  child: const Icon(Icons.air, color: Colors.white, size: 16),
                 ),
               ],
             ),
           ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -599,7 +622,7 @@ class _DataBubble extends StatelessWidget {
   Widget build(BuildContext context) {
     return Expanded(
       child: Container(
-        padding: const EdgeInsets.all(14),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
         decoration: BoxDecoration(
           color: AppTheme.surfaceContainerLowest,
           borderRadius: BorderRadius.circular(16),
@@ -613,16 +636,28 @@ class _DataBubble extends StatelessWidget {
               child: Icon(icon, color: AppTheme.primary, size: 16),
             ),
             const SizedBox(height: 8),
-            Text(label.toUpperCase(), style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: Color(0xFF404942), letterSpacing: 0.5)),
+            Text(
+              label.toUpperCase(),
+              style: AppTheme.font(fontSize: 10, fontWeight: FontWeight.w600, color: AppTheme.textSecondary, letterSpacing: 0.5),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
             const SizedBox(height: 4),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.baseline,
               textBaseline: TextBaseline.alphabetic,
               children: [
-                Text(value, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.primary)),
+                Flexible(
+                  child: Text(
+                    value,
+                    style: AppTheme.font(fontSize: 16, fontWeight: FontWeight.bold, color: AppTheme.primaryDark),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
                 const SizedBox(width: 2),
-                Text(unit, style: const TextStyle(fontSize: 10, color: Color(0xFF404942))),
+                Text(unit, style: AppTheme.font(fontSize: 10, color: AppTheme.textSecondary)),
               ],
             ),
           ],
