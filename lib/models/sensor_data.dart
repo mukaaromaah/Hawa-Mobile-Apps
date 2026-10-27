@@ -91,17 +91,26 @@ class SensorData {
     return directions[index];
   }
 
-  // Mock data awal (berdasarkan data tipikal TPS Brakseng)
+  // Kecepatan angin dalam km/h
+  double get windSpeedKmh => windSpeed * 3.6;
+
+  // Status teks kipas
+  String get fanStatusText => fan ? 'AKTIF (MEMOMPA)' : 'STANDBY (MATI)';
+
+  // Status CO2
+  String get co2StatusText => co2 > 800 ? 'Tinggi' : 'Normal';
+
+  // Mock data awal (berdasarkan telemetri aktual TPS Brakseng)
   static SensorData get mockSample => SensorData(
-    pm1: 8.5,
-    pm25: 18.2,
-    pm10: 24.6,
-    co2: 432.0,
-    temperature: 24.8,
-    humidity: 78.0,
-    windSpeed: 2.4,
-    windDir: 135,
+    pm1: 19.0,
+    pm25: 35.0,
+    pm10: 39.0,
+    co2: 487.0,
+    temperature: 16.7,
+    humidity: 93.0,
+    windSpeed: 1.29,
+    windDir: 321,
     fan: true,
-    measuredAt: DateTime.now().subtract(const Duration(minutes: 2)),
+    measuredAt: DateTime.now().subtract(const Duration(seconds: 4)),
   );
 }

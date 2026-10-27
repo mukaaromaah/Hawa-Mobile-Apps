@@ -14,15 +14,7 @@ class LogDataScreen extends StatefulWidget {
 
 class _LogDataScreenState extends State<LogDataScreen> {
   String _filterMetric = 'Semua';
-  final TextEditingController _searchController = TextEditingController();
-
-  final List<String> _filters = ['Semua', 'PM > 35', 'CO2 > 800', 'Fan ON'];
-
-  @override
-  void dispose() {
-    _searchController.dispose();
-    super.dispose();
-  }
+  final List<String> _filters = ['Semua', 'PM 2.5 > 35', 'CO₂ > 800', 'Kipas Aktif'];
 
   @override
   Widget build(BuildContext context) {
@@ -32,9 +24,9 @@ class _LogDataScreenState extends State<LogDataScreen> {
 
     // Filter logic
     final filteredHistory = history.where((item) {
-      if (_filterMetric == 'PM > 35' && item.pm25 <= 35) return false;
-      if (_filterMetric == 'CO2 > 800' && item.co2 <= 800) return false;
-      if (_filterMetric == 'Fan ON' && !item.fan) return false;
+      if (_filterMetric == 'PM 2.5 > 35' && item.pm25 <= 35) return false;
+      if (_filterMetric == 'CO₂ > 800' && item.co2 <= 800) return false;
+      if (_filterMetric == 'Kipas Aktif' && !item.fan) return false;
       return true;
     }).toList();
 
@@ -54,48 +46,60 @@ class _LogDataScreenState extends State<LogDataScreen> {
               parent: BouncingScrollPhysics(),
             ),
             slivers: [
-              // ── Header ───────────────────────────────────────────
+              // ── Header Section ────────────────────────────────────
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 14),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      // Title & Live Sync pill
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Log Data Telemetri',
-                                style: AppTheme.font(
-                                  fontSize: 22,
-                                  fontWeight: FontWeight.w700,
-                                  color: AppTheme.primaryDark,
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    const Icon(Icons.storage_rounded, size: 20, color: AppTheme.primaryDark),
+                                    const SizedBox(width: 8),
+                                    Flexible(
+                                      child: Text(
+                                        'Data Log Historis',
+                                        style: AppTheme.font(
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.w800,
+                                          color: AppTheme.primaryDark,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                'TPS3R Brakseng · Cloud Supabase & MQTT',
-                                style: AppTheme.font(
-                                  fontSize: 12,
-                                  color: AppTheme.textSecondary,
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Total Terekam: 78,018 data (Cloud Supabase)',
+                                  style: AppTheme.font(
+                                    fontSize: 12,
+                                    color: AppTheme.textSecondary,
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
-                          // Live Indicator Pill
+                          // Live Sync Indicator
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                             decoration: BoxDecoration(
                               color: isMqttConnected
-                                  ? AppTheme.success.withValues(alpha: 0.12)
-                                  : AppTheme.textMuted.withValues(alpha: 0.12),
+                                  ? const Color(0xFFE5F7ED)
+                                  : const Color(0xFFF3F4F6),
                               borderRadius: BorderRadius.circular(20),
                               border: Border.all(
                                 color: isMqttConnected
-                                    ? AppTheme.success.withValues(alpha: 0.3)
+                                    ? const Color(0xFF86EFAC)
                                     : AppTheme.borderLight,
                               ),
                             ),
@@ -112,7 +116,7 @@ class _LogDataScreenState extends State<LogDataScreen> {
                                 ),
                                 const SizedBox(width: 6),
                                 Text(
-                                  isMqttConnected ? 'LIVE' : 'OFFLINE',
+                                  isMqttConnected ? 'Live Sync' : 'Offline',
                                   style: AppTheme.font(
                                     fontSize: 11,
                                     fontWeight: FontWeight.w700,
@@ -124,47 +128,68 @@ class _LogDataScreenState extends State<LogDataScreen> {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 14),
 
-                      // Quick Stats Overview Cards
+                      // Action Toolbar: Refresh & Ekspor CSV
                       Row(
                         children: [
                           Expanded(
-                            child: _StatCard(
-                              label: 'Total Rekaman',
-                              value: '${history.length}',
-                              subtitle: 'Sesi Aktif',
-                              icon: Icons.receipt_long_rounded,
-                              color: AppTheme.primaryDark,
+                            child: OutlinedButton.icon(
+                              onPressed: () async {
+                                HapticFeedback.lightImpact();
+                                await sensorProvider.init();
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text('Data log berhasil diperbarui', style: AppTheme.font(fontSize: 12)),
+                                      duration: const Duration(seconds: 2),
+                                    ),
+                                  );
+                                }
+                              },
+                              icon: const Icon(Icons.refresh_rounded, size: 16),
+                              label: Text('Refresh', style: AppTheme.font(fontSize: 12, fontWeight: FontWeight.w600)),
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: AppTheme.primaryDark,
+                                backgroundColor: Colors.white,
+                                side: BorderSide(color: AppTheme.borderLight),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                                padding: const EdgeInsets.symmetric(vertical: 10),
+                              ),
                             ),
                           ),
-                          const SizedBox(width: 12),
+                          const SizedBox(width: 10),
                           Expanded(
-                            child: _StatCard(
-                              label: 'Sampling Rate',
-                              value: '~2.0s',
-                              subtitle: 'ESP32 Dual-Core',
-                              icon: Icons.timer_rounded,
-                              color: const Color(0xFF0D9488),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: _StatCard(
-                              label: 'Rata-rata PM',
-                              value: history.isNotEmpty
-                                  ? (history.map((e) => e.pm25).reduce((a, b) => a + b) / history.length).toStringAsFixed(1)
-                                  : '0',
-                              subtitle: 'µg/m³ PM2.5',
-                              icon: Icons.grain_rounded,
-                              color: AppTheme.accentGreen,
+                            child: ElevatedButton.icon(
+                              onPressed: () {
+                                HapticFeedback.selectionClick();
+                                final rows = history.take(10).map((e) =>
+                                    '${e.measuredAt.toIso8601String()},${e.pm1},${e.pm25},${e.pm10},${e.temperature},${e.humidity},${e.co2},${e.windSpeed},${e.fan ? 1 : 0}'
+                                ).join('\n');
+                                final csvPreview = 'Waktu,PM1.0,PM2.5,PM10,Suhu,Kelembaban,CO2,Angin,Kipas\n$rows';
+                                Clipboard.setData(ClipboardData(text: csvPreview));
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    backgroundColor: AppTheme.primaryDark,
+                                    content: Text('Log CSV disalin ke clipboard!', style: AppTheme.font(fontSize: 12, color: Colors.white)),
+                                    duration: const Duration(seconds: 2),
+                                  ),
+                                );
+                              },
+                              icon: const Icon(Icons.file_download_outlined, size: 16, color: Colors.white),
+                              label: Text('Ekspor (CSV)', style: AppTheme.font(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.white)),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppTheme.primaryDark,
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                                padding: const EdgeInsets.symmetric(vertical: 10),
+                              ),
                             ),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 14),
 
-                      // Filter Pills
+                      // Filter Chips Row
                       SingleChildScrollView(
                         scrollDirection: Axis.horizontal,
                         physics: const BouncingScrollPhysics(),
@@ -177,8 +202,8 @@ class _LogDataScreenState extends State<LogDataScreen> {
                                 label: Text(
                                   filter,
                                   style: AppTheme.font(
-                                    fontSize: 12,
-                                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                                    fontSize: 11,
+                                    fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
                                     color: isSelected ? Colors.white : AppTheme.primaryDark,
                                   ),
                                 ),
@@ -189,10 +214,11 @@ class _LogDataScreenState extends State<LogDataScreen> {
                                   color: isSelected ? AppTheme.primaryDark : AppTheme.borderLight,
                                 ),
                                 shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(20),
+                                  borderRadius: BorderRadius.circular(18),
                                 ),
                                 onSelected: (val) {
                                   if (val) {
+                                    HapticFeedback.selectionClick();
                                     setState(() => _filterMetric = filter);
                                   }
                                 },
@@ -206,7 +232,7 @@ class _LogDataScreenState extends State<LogDataScreen> {
                 ),
               ),
 
-              // ── Log List ──────────────────────────────────────────
+              // ── Log Items List ────────────────────────────────────
               if (filteredHistory.isEmpty)
                 SliverFillRemaining(
                   hasScrollBody: false,
@@ -214,15 +240,11 @@ class _LogDataScreenState extends State<LogDataScreen> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.inbox_rounded, size: 48, color: AppTheme.textMuted),
-                        const SizedBox(height: 12),
+                        const Icon(Icons.inbox_rounded, size: 44, color: AppTheme.textMuted),
+                        const SizedBox(height: 10),
                         Text(
-                          'Belum ada log sesuai filter',
-                          style: AppTheme.font(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: AppTheme.textSecondary,
-                          ),
+                          'Tidak ada data sesuai filter saat ini',
+                          style: AppTheme.font(fontSize: 13, color: AppTheme.textSecondary),
                         ),
                       ],
                     ),
@@ -236,8 +258,8 @@ class _LogDataScreenState extends State<LogDataScreen> {
                       (context, index) {
                         final item = filteredHistory[index];
                         final isFirst = index == 0;
-                        return _LogItemCard(
-                          index: filteredHistory.length - index,
+                        return _TelemetryCard(
+                          recordNumber: filteredHistory.length - index,
                           data: item,
                           isLatest: isFirst,
                         );
@@ -254,102 +276,43 @@ class _LogDataScreenState extends State<LogDataScreen> {
   }
 }
 
-class _StatCard extends StatelessWidget {
-  final String label;
-  final String value;
-  final String subtitle;
-  final IconData icon;
-  final Color color;
-
-  const _StatCard({
-    required this.label,
-    required this.value,
-    required this.subtitle,
-    required this.icon,
-    required this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTheme.borderLight),
-        boxShadow: [
-          BoxShadow(
-            color: color.withValues(alpha: 0.04),
-            blurRadius: 10,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(icon, size: 18, color: color),
-          const SizedBox(height: 8),
-          Text(
-            value,
-            style: AppTheme.font(
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
-              color: AppTheme.primaryDark,
-            ),
-          ),
-          const SizedBox(height: 2),
-          Text(
-            subtitle,
-            style: AppTheme.font(
-              fontSize: 10,
-              color: AppTheme.textSecondary,
-            ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _LogItemCard extends StatelessWidget {
-  final int index;
+class _TelemetryCard extends StatelessWidget {
+  final int recordNumber;
   final SensorData data;
   final bool isLatest;
 
-  const _LogItemCard({
-    required this.index,
+  const _TelemetryCard({
+    required this.recordNumber,
     required this.data,
     required this.isLatest,
   });
 
-  String _formatTime(DateTime dt) {
+  String _formatDateTime(DateTime dt) {
+    final d = dt.day.toString().padLeft(2, '0');
+    final m = dt.month.toString().padLeft(2, '0');
+    final y = dt.year.toString();
     final h = dt.hour.toString().padLeft(2, '0');
-    final m = dt.minute.toString().padLeft(2, '0');
+    final min = dt.minute.toString().padLeft(2, '0');
     final s = dt.second.toString().padLeft(2, '0');
-    return '$h:$m:$s';
+    return '$d/$m/$y, $h.$min.$s';
   }
 
   @override
   Widget build(BuildContext context) {
     final bool isWarn = data.pm25 > 35;
-    final bool isCrit = data.pm25 > 100;
-    final statusColor = isCrit
+    final bool isCrit = data.pm25 > 75;
+    final pmColor = isCrit
         ? AppTheme.error
-        : (isWarn ? AppTheme.warning : AppTheme.success);
+        : (isWarn ? const Color(0xFFF59E0B) : AppTheme.success);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(18),
         border: Border.all(
-          color: isLatest
-              ? AppTheme.primaryDark.withValues(alpha: 0.25)
-              : AppTheme.borderLight,
+          color: isLatest ? AppTheme.primaryDark.withValues(alpha: 0.3) : AppTheme.borderLight,
           width: isLatest ? 1.4 : 1.0,
         ),
         boxShadow: [
@@ -363,7 +326,7 @@ class _LogItemCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Row 1: Index + Timestamp + Badge
+          // Row 1: No, Timestamp, Fan status badge
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -376,115 +339,79 @@ class _LogItemCard extends StatelessWidget {
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
-                      '#$index',
+                      '#$recordNumber',
                       style: AppTheme.font(
                         fontSize: 11,
-                        fontWeight: FontWeight.w700,
+                        fontWeight: FontWeight.w800,
                         color: AppTheme.primaryDark,
                       ),
                     ),
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    _formatTime(data.measuredAt),
+                    _formatDateTime(data.measuredAt),
                     style: AppTheme.font(
-                      fontSize: 13,
+                      fontSize: 12,
                       fontWeight: FontWeight.w600,
                       color: AppTheme.primaryDark,
                     ),
                   ),
-                  if (isLatest) ...[
-                    const SizedBox(width: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: AppTheme.success.withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Text(
-                        'TERBARU',
-                        style: AppTheme.font(
-                          fontSize: 9,
-                          fontWeight: FontWeight.w700,
-                          color: AppTheme.success,
-                        ),
-                      ),
-                    ),
-                  ],
                 ],
               ),
-              // Status Pill
+              // Fan status badge
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
-                  color: statusColor.withValues(alpha: 0.1),
+                  color: data.fan ? const Color(0xFFE5F7ED) : const Color(0xFFF3F4F6),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Text(
-                  isCrit ? 'Bahaya' : (isWarn ? 'Perhatian' : 'Normal'),
-                  style: AppTheme.font(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                    color: statusColor,
-                  ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.mode_fan_off_rounded,
+                      size: 12,
+                      color: data.fan ? AppTheme.success : AppTheme.textMuted,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      data.fan ? 'Aktif' : 'Mati',
+                      style: AppTheme.font(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: data.fan ? AppTheme.success : AppTheme.textMuted,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
           ),
           const SizedBox(height: 12),
 
-          // Row 2: Grid Metrics (PM1, PM2.5, PM10, Temp, Humid, CO2, Wind, Fan)
+          // Row 2: Particulates (PM1.0, PM2.5, PM10)
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _MetricItem(label: 'PM1.0', value: '${data.pm1.toStringAsFixed(1)} µg'),
-              _MetricItem(
-                label: 'PM2.5',
-                value: '${data.pm25.toStringAsFixed(1)} µg',
-                isHighlight: true,
-                color: statusColor,
+              _TeleItem(label: 'PM 1.0', value: '${data.pm1.toInt()} µg/m³'),
+              _TeleItem(
+                label: 'PM 2.5',
+                value: '${data.pm25.toInt()} µg/m³',
+                highlightColor: pmColor,
               ),
-              _MetricItem(label: 'PM10', value: '${data.pm10.toStringAsFixed(1)} µg'),
-              _MetricItem(label: 'Suhu', value: '${data.temperature.toStringAsFixed(1)}°C'),
-              _MetricItem(label: 'CO₂', value: '${data.co2.toInt()} ppm'),
+              _TeleItem(label: 'PM 10', value: '${data.pm10.toInt()} µg/m³'),
             ],
           ),
           const SizedBox(height: 8),
           Divider(color: AppTheme.borderLight, height: 1),
           const SizedBox(height: 8),
 
-          // Row 3: Wind & Fan
+          // Row 3: Climate & Wind
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: [
-                  const Icon(Icons.navigation_rounded, size: 14, color: AppTheme.textSecondary),
-                  const SizedBox(width: 4),
-                  Text(
-                    'Angin: ${data.windSpeed.toStringAsFixed(1)} m/s (${data.windDir}° ${data.windDirectionLabel})',
-                    style: AppTheme.font(fontSize: 11, color: AppTheme.textSecondary),
-                  ),
-                ],
-              ),
-              Row(
-                children: [
-                  Icon(
-                    Icons.air_rounded,
-                    size: 14,
-                    color: data.fan ? AppTheme.success : AppTheme.textMuted,
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    'Kipas: ${data.fan ? "ON (Aktif)" : "OFF"}',
-                    style: AppTheme.font(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
-                      color: data.fan ? AppTheme.success : AppTheme.textMuted,
-                    ),
-                  ),
-                ],
-              ),
+              _TeleItem(label: 'Suhu', value: '${data.temperature.toStringAsFixed(1)}°C'),
+              _TeleItem(label: 'Kelembaban', value: '${data.humidity.toInt()}%'),
+              _TeleItem(label: 'CO₂', value: '${data.co2.toInt()} ppm'),
+              _TeleItem(label: 'Angin', value: '${data.windSpeed.toStringAsFixed(2)} m/s (${data.windDir}°)'),
             ],
           ),
         ],
@@ -493,41 +420,40 @@ class _LogItemCard extends StatelessWidget {
   }
 }
 
-class _MetricItem extends StatelessWidget {
+class _TeleItem extends StatelessWidget {
   final String label;
   final String value;
-  final bool isHighlight;
-  final Color? color;
+  final Color? highlightColor;
 
-  const _MetricItem({
+  const _TeleItem({
     required this.label,
     required this.value,
-    this.isHighlight = false,
-    this.color,
+    this.highlightColor,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: AppTheme.font(
-            fontSize: 10,
-            color: AppTheme.textSecondary,
+    return Expanded(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: AppTheme.font(fontSize: 10, color: AppTheme.textSecondary),
           ),
-        ),
-        const SizedBox(height: 2),
-        Text(
-          value,
-          style: AppTheme.font(
-            fontSize: 12,
-            fontWeight: isHighlight ? FontWeight.w700 : FontWeight.w600,
-            color: color ?? AppTheme.primaryDark,
+          const SizedBox(height: 2),
+          Text(
+            value,
+            style: AppTheme.font(
+              fontSize: 12,
+              fontWeight: highlightColor != null ? FontWeight.w800 : FontWeight.w600,
+              color: highlightColor ?? AppTheme.primaryDark,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

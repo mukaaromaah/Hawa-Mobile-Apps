@@ -1,5 +1,4 @@
 import 'dart:math' as math;
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -8,10 +7,33 @@ import 'package:hawa_mobile/providers/sensor_provider.dart';
 import 'package:hawa_mobile/screens/profile_screen.dart';
 import 'package:hawa_mobile/theme/app_theme.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   final ValueChanged<int>? onNavigateToTab;
 
   const HomeScreen({super.key, this.onNavigateToTab});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMixin {
+  late final AnimationController _fanAnimController;
+  int _activeChartTabIndex = 0; // 0: Partikulat, 1: Gas & Suhu, 2: Kecepatan Angin
+
+  @override
+  void initState() {
+    super.initState();
+    _fanAnimController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1400),
+    );
+  }
+
+  @override
+  void dispose() {
+    _fanAnimController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -20,21 +42,21 @@ class HomeScreen extends StatelessWidget {
     final history = sensorProvider.historyData;
     final isMqttConnected = sensorProvider.isConnectedMqtt;
 
-    final pm25Value = data.pm25.toInt();
-    final tempValue = data.temperature.toStringAsFixed(1);
-    final humidValue = data.humidity.toInt();
-    final windSpeed = data.windSpeed.toStringAsFixed(1);
-    final co2Value = data.co2.toInt();
-    final fanOn = data.fan;
+    // Control fan animation
+    if (data.fan && !_fanAnimController.isAnimating) {
+      _fanAnimController.repeat();
+    } else if (!data.fan && _fanAnimController.isAnimating) {
+      _fanAnimController.stop();
+    }
 
     final bool isCritical = data.status == AirQualityStatus.critical;
     final bool isWarning = data.status == AirQualityStatus.warning;
-    final String statusLabel = isCritical ? 'Berbahaya' : (isWarning ? 'Perhatian' : 'Normal');
+    final String statusLabel = isCritical ? 'BERBAHAYA' : (isWarning ? 'SEDANG' : 'BAIK');
     final Color statusColor = isCritical
         ? AppTheme.error
-        : (isWarning ? AppTheme.warning : AppTheme.success);
+        : (isWarning ? const Color(0xFFF59E0B) : AppTheme.success);
 
-    final bool hasAlert = isWarning || isCritical || co2Value > 800;
+    final bool hasAlert = isWarning || isCritical || data.co2 > 800;
 
     return Container(
       decoration: const BoxDecoration(
@@ -42,9 +64,9 @@ class HomeScreen extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            Color(0xFFE8F5EE), // Mint hijau lembut
-            Color(0xFFF7FAF8), // Off-white sejuk
-            Color(0xFFEDF7F2), // Hijau sangat muda
+            Color(0xFFE8F5EE), // Mint lembut
+            Color(0xFFF7FAF8), // Off-white
+            Color(0xFFEDF7F2), // Pale forest
           ],
           stops: [0.0, 0.5, 1.0],
         ),
@@ -61,107 +83,180 @@ class HomeScreen extends StatelessWidget {
             parent: BouncingScrollPhysics(),
           ),
           slivers: [
-            // ─── App Bar ──────────────────────────────────────────
+            // ── Top Header Bar ────────────────────────────────────
             SliverToBoxAdapter(
               child: SafeArea(
                 bottom: false,
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Location Pill
-                      const _LocationPill(),
-
-                      // Actions: Telemetry Info + Alert Bell + Avatar
+                      // Row 1: Brand & Actions
                       Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          // Info System Button
-                          IconButton(
-                            onPressed: () => _showSystemInfoSheet(context, data, isMqttConnected),
-                            icon: const Icon(Icons.info_outline_rounded, color: AppTheme.primaryDark, size: 22),
-                            tooltip: 'Informasi Telemetri',
-                            style: IconButton.styleFrom(
-                              backgroundColor: Colors.white.withValues(alpha: 0.8),
-                              shape: const CircleBorder(),
-                              padding: const EdgeInsets.all(8),
-                            ),
-                          ),
-                          const SizedBox(width: 6),
-
-                          // Alert Bell Button
-                          Stack(
-                            alignment: Alignment.topRight,
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              IconButton(
-                                onPressed: () => _showAlertSheet(context, data, hasAlert),
-                                icon: Icon(
-                                  hasAlert ? Icons.notifications_active_rounded : Icons.notifications_outlined,
-                                  color: hasAlert ? AppTheme.warning : AppTheme.primaryDark,
-                                  size: 22,
-                                ),
-                                style: IconButton.styleFrom(
-                                  backgroundColor: Colors.white.withValues(alpha: 0.8),
-                                  shape: const CircleBorder(),
-                                  padding: const EdgeInsets.all(8),
+                              Text(
+                                'TPA BRAKSENG MONITOR',
+                                style: AppTheme.font(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w800,
+                                  color: AppTheme.primaryDark,
+                                  letterSpacing: 0.5,
                                 ),
                               ),
-                              if (hasAlert)
-                                Positioned(
-                                  top: 6,
-                                  right: 6,
-                                  child: Container(
-                                    width: 9,
-                                    height: 9,
-                                    decoration: const BoxDecoration(
-                                      color: AppTheme.error,
-                                      shape: BoxShape.circle,
-                                    ),
-                                  ),
+                              const SizedBox(height: 2),
+                              Text(
+                                'Stasiun Pemantauan Kualitas Udara & Lingkungan IoT',
+                                style: AppTheme.font(
+                                  fontSize: 11,
+                                  color: AppTheme.textSecondary,
                                 ),
+                              ),
                             ],
                           ),
-                          const SizedBox(width: 8),
-
-                          // Profile Avatar
-                          GestureDetector(
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                PageRouteBuilder(
-                                  transitionDuration: const Duration(milliseconds: 300),
-                                  pageBuilder: (context, animation, secondaryAnimation) => const ProfileScreen(),
-                                  transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                                    return SlideTransition(
-                                      position: Tween<Offset>(
-                                        begin: const Offset(0.05, 0),
-                                        end: Offset.zero,
-                                      ).animate(CurvedAnimation(parent: animation, curve: Curves.easeOutCubic)),
-                                      child: FadeTransition(opacity: animation, child: child),
-                                    );
-                                  },
-                                ),
-                              );
-                            },
-                            child: Container(
-                              width: 38,
-                              height: 38,
-                              decoration: BoxDecoration(
-                                color: AppTheme.primaryDark,
-                                shape: BoxShape.circle,
-                                border: Border.all(color: Colors.white, width: 2),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: AppTheme.primaryDark.withValues(alpha: 0.15),
-                                    blurRadius: 8,
-                                    offset: const Offset(0, 2),
+                          // Actions: Bell & Avatar
+                          Row(
+                            children: [
+                              Stack(
+                                alignment: Alignment.topRight,
+                                children: [
+                                  IconButton(
+                                    onPressed: () => _showAlertSheet(context, data, hasAlert),
+                                    icon: Icon(
+                                      hasAlert ? Icons.notifications_active_rounded : Icons.notifications_outlined,
+                                      color: hasAlert ? const Color(0xFFF59E0B) : AppTheme.primaryDark,
+                                      size: 22,
+                                    ),
+                                    style: IconButton.styleFrom(
+                                      backgroundColor: Colors.white.withValues(alpha: 0.85),
+                                      shape: const CircleBorder(),
+                                      padding: const EdgeInsets.all(8),
+                                    ),
                                   ),
+                                  if (hasAlert)
+                                    Positioned(
+                                      top: 6,
+                                      right: 6,
+                                      child: Container(
+                                        width: 8,
+                                        height: 8,
+                                        decoration: const BoxDecoration(
+                                          color: AppTheme.error,
+                                          shape: BoxShape.circle,
+                                        ),
+                                      ),
+                                    ),
                                 ],
                               ),
-                              child: const Icon(Icons.person_rounded, color: Colors.white, size: 20),
-                            ),
+                              const SizedBox(width: 8),
+                              GestureDetector(
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    PageRouteBuilder(
+                                      transitionDuration: const Duration(milliseconds: 300),
+                                      pageBuilder: (context, anim, secAnim) => const ProfileScreen(),
+                                      transitionsBuilder: (context, anim, secAnim, child) {
+                                        return FadeTransition(opacity: anim, child: child);
+                                      },
+                                    ),
+                                  );
+                                },
+                                child: Container(
+                                  width: 36,
+                                  height: 36,
+                                  decoration: BoxDecoration(
+                                    color: AppTheme.primaryDark,
+                                    shape: BoxShape.circle,
+                                    border: Border.all(color: Colors.white, width: 2),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: AppTheme.primaryDark.withValues(alpha: 0.15),
+                                        blurRadius: 6,
+                                        offset: const Offset(0, 2),
+                                      ),
+                                    ],
+                                  ),
+                                  child: const Icon(Icons.person_rounded, color: Colors.white, size: 18),
+                                ),
+                              ),
+                            ],
                           ),
                         ],
+                      ),
+                      const SizedBox(height: 12),
+
+                      // Row 2: Status Bar Ribbon (Uptime, Topic, Status)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.9),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: AppTheme.borderLight),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppTheme.primaryDark.withValues(alpha: 0.03),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Row(
+                              children: [
+                                const Icon(Icons.timer_outlined, size: 14, color: AppTheme.textSecondary),
+                                const SizedBox(width: 4),
+                                Text(
+                                  'Uptime: 18:12:08',
+                                  style: AppTheme.font(fontSize: 11, fontWeight: FontWeight.w600, color: AppTheme.primaryDark),
+                                ),
+                              ],
+                            ),
+                            Container(width: 1, height: 12, color: AppTheme.borderLight),
+                            Row(
+                              children: [
+                                const Icon(Icons.tag_rounded, size: 14, color: AppTheme.textSecondary),
+                                const SizedBox(width: 4),
+                                Text(
+                                  'tpa/monitor/data',
+                                  style: AppTheme.font(fontSize: 11, color: AppTheme.textSecondary),
+                                ),
+                              ],
+                            ),
+                            Container(width: 1, height: 12, color: AppTheme.borderLight),
+                            // MQTT Connected badge
+                            Row(
+                              children: [
+                                Container(
+                                  width: 7,
+                                  height: 7,
+                                  decoration: BoxDecoration(
+                                    color: isMqttConnected ? AppTheme.success : AppTheme.textMuted,
+                                    shape: BoxShape.circle,
+                                    boxShadow: isMqttConnected
+                                        ? [BoxShadow(color: AppTheme.success.withValues(alpha: 0.6), blurRadius: 6, spreadRadius: 1)]
+                                        : null,
+                                  ),
+                                ),
+                                const SizedBox(width: 5),
+                                Text(
+                                  isMqttConnected ? 'CONNECTED' : 'OFFLINE',
+                                  style: AppTheme.font(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w800,
+                                    color: isMqttConnected ? AppTheme.success : AppTheme.textMuted,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
                     ],
                   ),
@@ -169,77 +264,70 @@ class HomeScreen extends StatelessWidget {
               ),
             ),
 
-            // ─── Body Content ─────────────────────────────────────────
+            // ── Body Cards List ───────────────────────────────────
             SliverPadding(
-              padding: const EdgeInsets.fromLTRB(20, 0, 20, 120),
+              padding: const EdgeInsets.fromLTRB(20, 4, 20, 110),
               sliver: SliverList(
                 delegate: SliverChildListDelegate([
-                  // ── Hero PM2.5 Card ──────────────────────────────
-                  _HeroCard(
-                    pm1Value: data.pm1,
-                    pm25Value: pm25Value,
-                    pm10Value: data.pm10,
+                  // ── Card 1: PARTIKULAT UDARA (PMS5003) ────────────
+                  _ParticulateCard(
+                    pm1: data.pm1,
+                    pm25: data.pm25,
+                    pm10: data.pm10,
                     statusLabel: statusLabel,
                     statusColor: statusColor,
-                    isCritical: isCritical,
-                    isWarning: isWarning,
-                    temp: tempValue,
-                    humid: '$humidValue%',
-                    wind: '$windSpeed m/s',
-                    isLive: isMqttConnected,
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 14),
 
-                  // ── Highlights Row: Fan Status & CO2 ───────────────
+                  // ── Card 2: GAS & SUHU (SCD41/SHT31) ──────────────
+                  _GasAndClimateCard(
+                    temperature: data.temperature,
+                    humidity: data.humidity,
+                    co2: data.co2,
+                  ),
+                  const SizedBox(height: 14),
+
+                  // ── Card 3 & 4: Angin & Kipas Grid ─────────────────
                   Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      // Arah & Kecepatan Angin
                       Expanded(
-                        child: _HighlightCard(
-                          icon: Icons.air_rounded,
-                          title: 'Sistem Kipas',
-                          value: fanOn ? 'AKTIF' : 'STANDBY',
-                          valueColor: fanOn ? AppTheme.success : AppTheme.textMuted,
-                          subtitle: fanOn ? 'Exhaust On' : 'Otomatis',
-                          accentColor: fanOn ? AppTheme.successContainer : const Color(0xFFF0F0F0),
-                          isSpinning: fanOn,
+                        child: _WindCompassMiniCard(
+                          windSpeed: data.windSpeed,
+                          windDir: data.windDir,
+                          windDirLabel: data.windDirectionLabel,
+                          windSpeedKmh: data.windSpeedKmh,
                         ),
                       ),
                       const SizedBox(width: 12),
+                      // Sirkulasi Udara (Kipas)
                       Expanded(
-                        child: _HighlightCard(
-                          icon: Icons.co2_rounded,
-                          title: 'Gas Karbon (CO₂)',
-                          value: '$co2Value',
-                          valueColor: co2Value > 1000 ? AppTheme.error : AppTheme.primaryDark,
-                          subtitle: 'ppm · ${co2Value > 1000 ? "Tinggi" : "Normal"}',
-                          accentColor: co2Value > 1000 ? AppTheme.errorContainer : AppTheme.mintContainer,
-                          isSpinning: false,
+                        child: _FanCirculationCard(
+                          fanOn: data.fan,
+                          animController: _fanAnimController,
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 14),
 
-                  // ── Wind Direction & Compass Card ─────────────────
-                  _WindCompassCard(
-                    windSpeed: data.windSpeed,
-                    windDir: data.windDir,
-                    windDirLabel: data.windDirectionLabel,
-                  ),
-                  const SizedBox(height: 16),
-
-                  // ── Real-Time Streaming Chart (15 points) ─────────
-                  _RealtimeMiniChart(
+                  // ── Card 5: TREN GRAFIK REAL-TIME ─────────────────
+                  _RealtimeChartCard(
                     history: history,
-                    onTapViewAll: () => onNavigateToTab?.call(1),
+                    activeTab: _activeChartTabIndex,
+                    onTabChanged: (index) {
+                      HapticFeedback.selectionClick();
+                      setState(() => _activeChartTabIndex = index);
+                    },
+                    onTapViewDetails: () => widget.onNavigateToTab?.call(1),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 14),
 
-                  // ── Telemetry Hardware Card ───────────────────────
-                  _HardwareSpecsCard(
+                  // ── Card 6: DETAIL PERANGKAT ───────────────────────
+                  _DeviceDetailCard(
                     isMqttConnected: isMqttConnected,
-                    measuredAt: data.measuredAt,
-                    onTapDetails: () => _showSystemInfoSheet(context, data, isMqttConnected),
+                    onTapMore: () => _showSystemInfoSheet(context, data, isMqttConnected),
                   ),
                 ]),
               ),
@@ -267,7 +355,7 @@ class HomeScreen extends StatelessWidget {
                 children: [
                   Icon(
                     hasAlert ? Icons.warning_amber_rounded : Icons.check_circle_outline_rounded,
-                    color: hasAlert ? AppTheme.warning : AppTheme.success,
+                    color: hasAlert ? const Color(0xFFF59E0B) : AppTheme.success,
                     size: 24,
                   ),
                   const SizedBox(width: 10),
@@ -287,14 +375,14 @@ class HomeScreen extends StatelessWidget {
                 if (data.pm25 > 35)
                   _AlertRow(
                     title: 'Konsentrasi Partikulat PM2.5 Tinggi',
-                    desc: 'Nilai saat ini: ${data.pm25.toStringAsFixed(1)} µg/m³ (Batas aman: 35 µg/m³).',
-                    color: AppTheme.warning,
+                    desc: 'Nilai: ${data.pm25.toStringAsFixed(1)} µg/m³ (Batas aman: 35 µg/m³).',
+                    color: const Color(0xFFF59E0B),
                   ),
                 if (data.co2 > 800)
                   _AlertRow(
                     title: 'Konsentrasi Gas Karbon (CO₂) Meningkat',
-                    desc: 'Nilai saat ini: ${data.co2.toInt()} ppm (Batas normal: 800 ppm).',
-                    color: AppTheme.warning,
+                    desc: 'Nilai: ${data.co2.toInt()} ppm (Batas normal: 800 ppm).',
+                    color: const Color(0xFFF59E0B),
                   ),
               ],
               const SizedBox(height: 24),
@@ -332,23 +420,22 @@ class HomeScreen extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  const Icon(Icons.hub_rounded, color: AppTheme.primaryDark, size: 24),
+                  const Icon(Icons.memory_rounded, color: AppTheme.primaryDark, size: 24),
                   const SizedBox(width: 10),
                   Text(
-                    'Spesifikasi Node & Telemetri',
+                    'Detail Perangkat & Telemetri',
                     style: AppTheme.font(fontSize: 18, fontWeight: FontWeight.w700, color: AppTheme.primaryDark),
                   ),
                 ],
               ),
               const SizedBox(height: 20),
-              _DetailRow(label: 'Node Hardware', value: 'ESP32 Dual-Core (FreeRTOS)'),
-              _DetailRow(label: 'Lokasi Alat', value: 'TPS3R Brakseng, Bumiaji, Kota Batu'),
-              _DetailRow(label: 'Protokol', value: 'MQTT over TLS (Port 8883)'),
-              _DetailRow(label: 'Broker', value: 'HiveMQ Cloud'),
-              _DetailRow(label: 'Topik MQTT', value: 'tpa/monitor/data'),
-              _DetailRow(label: 'Sampling Rate', value: '~2000 ms (2 detik)'),
-              _DetailRow(label: 'Penyimpanan', value: 'Cloud Supabase'),
-              _DetailRow(label: 'Status Kipas', value: data.fan ? 'Aktif (Relay ON)' : 'Standby (Relay OFF)'),
+              _DetailRow(label: 'Lokasi Stasiun', value: 'TPS Brakseng, Bumiaji, Batu'),
+              _DetailRow(label: 'Arsitektur', value: 'ESP32 Dual-Core (FreeRTOS)'),
+              _DetailRow(label: 'Pembagian Core', value: 'Core 0: MQTT/OTA | Core 1: Sensors'),
+              _DetailRow(label: 'Server Host', value: 'b846d696536846c98fd91529e90260aa.s1.eu.hivemq.cloud'),
+              _DetailRow(label: 'Interval Baca', value: '2000 ms (~2 detik)'),
+              _DetailRow(label: 'MQTT Session', value: 'Clean Session (TLS Port 8883)'),
+              _DetailRow(label: 'Database Cloud', value: 'Cloud Supabase (78,018 data)'),
               const SizedBox(height: 20),
               SizedBox(
                 width: double.infinity,
@@ -359,13 +446,883 @@ class HomeScreen extends StatelessWidget {
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                     padding: const EdgeInsets.symmetric(vertical: 14),
                   ),
-                  child: Text('Mengerti', style: AppTheme.font(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.white)),
+                  child: Text('Tutup', style: AppTheme.font(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.white)),
                 ),
               ),
             ],
           ),
         );
       },
+    );
+  }
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+// Card 1: PARTIKULAT UDARA (PMS5003)
+// ──────────────────────────────────────────────────────────────────────────────
+
+class _ParticulateCard extends StatelessWidget {
+  final double pm1;
+  final double pm25;
+  final double pm10;
+  final String statusLabel;
+  final Color statusColor;
+
+  const _ParticulateCard({
+    required this.pm1,
+    required this.pm25,
+    required this.pm10,
+    required this.statusLabel,
+    required this.statusColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: AppTheme.borderLight),
+        boxShadow: [
+          BoxShadow(
+            color: AppTheme.primaryDark.withValues(alpha: 0.04),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header: Name & Status
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'PARTIKULAT UDARA (PMS5003)',
+                style: AppTheme.font(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  color: AppTheme.textSecondary,
+                  letterSpacing: 0.8,
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: statusColor.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Text(
+                  statusLabel,
+                  style: AppTheme.font(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w800,
+                    color: statusColor,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+
+          // Main PM2.5 Large Display
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.baseline,
+            textBaseline: TextBaseline.alphabetic,
+            children: [
+              Text(
+                '${pm25.toInt()}',
+                style: AppTheme.font(
+                  fontSize: 52,
+                  fontWeight: FontWeight.w800,
+                  color: AppTheme.primaryDark,
+                  height: 0.9,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                'µg/m³',
+                style: AppTheme.font(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: AppTheme.textSecondary,
+                ),
+              ),
+              const Spacer(),
+              Text(
+                'PM 2.5 (Debu Halus)',
+                style: AppTheme.font(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: AppTheme.primaryDark,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+
+          // Sub-bars for PM 1.0 & PM 10
+          _SubParticulateRow(
+            label: 'PM 1.0 (Partikel Sangat Halus)',
+            value: '${pm1.toInt()} µg/m³',
+            barColor: const Color(0xFF3B82F6), // Blue
+            fraction: (pm1 / 100).clamp(0.05, 1.0),
+          ),
+          const SizedBox(height: 10),
+          _SubParticulateRow(
+            label: 'PM 10 (Debu Kasar)',
+            value: '${pm10.toInt()} µg/m³',
+            barColor: const Color(0xFFF59E0B), // Yellow/Amber
+            fraction: (pm10 / 150).clamp(0.05, 1.0),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SubParticulateRow extends StatelessWidget {
+  final String label;
+  final String value;
+  final Color barColor;
+  final double fraction;
+
+  const _SubParticulateRow({
+    required this.label,
+    required this.value,
+    required this.barColor,
+    required this.fraction,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(label, style: AppTheme.font(fontSize: 11, color: AppTheme.textSecondary)),
+            Text(value, style: AppTheme.font(fontSize: 12, fontWeight: FontWeight.w700, color: AppTheme.primaryDark)),
+          ],
+        ),
+        const SizedBox(height: 5),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(4),
+          child: LinearProgressIndicator(
+            value: fraction,
+            minHeight: 5,
+            backgroundColor: const Color(0xFFE5E7EB),
+            valueColor: AlwaysStoppedAnimation<Color>(barColor),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+// Card 2: GAS & SUHU (SCD41/SHT31)
+// ──────────────────────────────────────────────────────────────────────────────
+
+class _GasAndClimateCard extends StatelessWidget {
+  final double temperature;
+  final double humidity;
+  final double co2;
+
+  const _GasAndClimateCard({
+    required this.temperature,
+    required this.humidity,
+    required this.co2,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final bool isCo2High = co2 > 800;
+    final co2Color = isCo2High ? const Color(0xFFF59E0B) : AppTheme.success;
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: AppTheme.borderLight),
+        boxShadow: [
+          BoxShadow(
+            color: AppTheme.primaryDark.withValues(alpha: 0.04),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'GAS & SUHU (SCD41/SHT31)',
+            style: AppTheme.font(
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              color: AppTheme.textSecondary,
+              letterSpacing: 0.8,
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // Temp & Humidity Row
+          Row(
+            children: [
+              Expanded(
+                child: Row(
+                  children: [
+                    const Icon(Icons.thermostat_rounded, size: 20, color: Color(0xFFEF4444)),
+                    const SizedBox(width: 8),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('SUHU', style: AppTheme.font(fontSize: 10, color: AppTheme.textSecondary)),
+                        Text(
+                          '${temperature.toStringAsFixed(1)} °C',
+                          style: AppTheme.font(fontSize: 22, fontWeight: FontWeight.w800, color: AppTheme.primaryDark),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              Container(width: 1, height: 36, color: AppTheme.borderLight),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Row(
+                  children: [
+                    const Icon(Icons.water_drop_rounded, size: 20, color: Color(0xFF06B6D4)),
+                    const SizedBox(width: 8),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('KELEMBABAN', style: AppTheme.font(fontSize: 10, color: AppTheme.textSecondary)),
+                        Text(
+                          '${humidity.toInt()} %',
+                          style: AppTheme.font(fontSize: 22, fontWeight: FontWeight.w800, color: AppTheme.primaryDark),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 18),
+          Divider(color: AppTheme.borderLight, height: 1),
+          const SizedBox(height: 14),
+
+          // CO2 Section
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'KADAR CO₂ (KARBONDIOKSIDA)',
+                style: AppTheme.font(fontSize: 10, fontWeight: FontWeight.w600, color: AppTheme.textSecondary),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(
+                  color: co2Color.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Text(
+                  isCo2High ? 'Tinggi' : 'Normal',
+                  style: AppTheme.font(fontSize: 10, fontWeight: FontWeight.w700, color: co2Color),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.baseline,
+            textBaseline: TextBaseline.alphabetic,
+            children: [
+              Text(
+                '${co2.toInt()}',
+                style: AppTheme.font(fontSize: 32, fontWeight: FontWeight.w800, color: AppTheme.primaryDark),
+              ),
+              const SizedBox(width: 6),
+              Text(
+                'ppm',
+                style: AppTheme.font(fontSize: 13, color: AppTheme.textSecondary),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(4),
+            child: LinearProgressIndicator(
+              value: (co2 / 1200).clamp(0.1, 1.0),
+              minHeight: 5,
+              backgroundColor: const Color(0xFFE5E7EB),
+              valueColor: AlwaysStoppedAnimation<Color>(co2Color),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+// Card 3: ARAH & KECEPATAN ANGIN
+// ──────────────────────────────────────────────────────────────────────────────
+
+class _WindCompassMiniCard extends StatelessWidget {
+  final double windSpeed;
+  final int windDir;
+  final String windDirLabel;
+  final double windSpeedKmh;
+
+  const _WindCompassMiniCard({
+    required this.windSpeed,
+    required this.windDir,
+    required this.windDirLabel,
+    required this.windSpeedKmh,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final double angleRad = (windDir * math.pi) / 180.0;
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppTheme.borderLight),
+        boxShadow: [
+          BoxShadow(
+            color: AppTheme.primaryDark.withValues(alpha: 0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'ARAH & KEC. ANGIN',
+            style: AppTheme.font(fontSize: 10, fontWeight: FontWeight.w700, color: AppTheme.textSecondary, letterSpacing: 0.6),
+          ),
+          const SizedBox(height: 12),
+          Center(
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                // Compass Circle
+                Container(
+                  width: 68,
+                  height: 68,
+                  decoration: BoxDecoration(
+                    color: AppTheme.mintContainer.withValues(alpha: 0.6),
+                    shape: BoxShape.circle,
+                    border: Border.all(color: AppTheme.borderLight, width: 1.5),
+                  ),
+                  child: Center(
+                    child: Text(
+                      'U',
+                      style: AppTheme.font(fontSize: 10, fontWeight: FontWeight.w900, color: AppTheme.primaryDark),
+                    ),
+                  ),
+                ),
+                // Rotating needle
+                Transform.rotate(
+                  angle: angleRad,
+                  child: SizedBox(
+                    width: 68,
+                    height: 68,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.navigation_rounded, size: 24, color: AppTheme.primaryDark),
+                        const SizedBox(height: 18),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text('KECEPATAN ANGIN', style: AppTheme.font(fontSize: 9, color: AppTheme.textSecondary)),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.baseline,
+            textBaseline: TextBaseline.alphabetic,
+            children: [
+              Text(
+                windSpeed.toStringAsFixed(2),
+                style: AppTheme.font(fontSize: 20, fontWeight: FontWeight.w800, color: AppTheme.primaryDark),
+              ),
+              const SizedBox(width: 4),
+              Text('m/s', style: AppTheme.font(fontSize: 11, color: AppTheme.textSecondary)),
+            ],
+          ),
+          const SizedBox(height: 2),
+          Text(
+            'Arah: $windDir° (${windSpeedKmh.toStringAsFixed(1)} km/h)',
+            style: AppTheme.font(fontSize: 10, fontWeight: FontWeight.w600, color: AppTheme.textSecondary),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+// Card 4: SIRKULASI UDARA (KIPAS)
+// ──────────────────────────────────────────────────────────────────────────────
+
+class _FanCirculationCard extends StatelessWidget {
+  final bool fanOn;
+  final AnimationController animController;
+
+  const _FanCirculationCard({
+    required this.fanOn,
+    required this.animController,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppTheme.borderLight),
+        boxShadow: [
+          BoxShadow(
+            color: AppTheme.primaryDark.withValues(alpha: 0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'SIRKULASI UDARA (KIPAS)',
+            style: AppTheme.font(fontSize: 10, fontWeight: FontWeight.w700, color: AppTheme.textSecondary, letterSpacing: 0.6),
+          ),
+          const SizedBox(height: 12),
+          Center(
+            child: Container(
+              width: 68,
+              height: 68,
+              decoration: BoxDecoration(
+                color: fanOn ? const Color(0xFFE0F2FE) : const Color(0xFFF3F4F6),
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: fanOn ? const Color(0xFF38BDF8) : AppTheme.borderLight,
+                  width: 1.5,
+                ),
+              ),
+              child: RotationTransition(
+                turns: animController,
+                child: Icon(
+                  Icons.mode_fan_off_rounded,
+                  size: 32,
+                  color: fanOn ? const Color(0xFF0284C7) : AppTheme.textMuted,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            fanOn ? 'AKTIF (MEMOMPA)' : 'STANDBY (MATI)',
+            style: AppTheme.font(
+              fontSize: 12,
+              fontWeight: FontWeight.w800,
+              color: fanOn ? AppTheme.success : AppTheme.textMuted,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Kipas berputar otomatis terjadwal untuk proses intake/exhaust.',
+            style: AppTheme.font(fontSize: 9, color: AppTheme.textSecondary),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+// Card 5: TREN GRAFIK REAL-TIME
+// ──────────────────────────────────────────────────────────────────────────────
+
+class _RealtimeChartCard extends StatelessWidget {
+  final List<SensorData> history;
+  final int activeTab; // 0: PM, 1: Gas & Suhu, 2: Kecepatan Angin
+  final ValueChanged<int> onTabChanged;
+  final VoidCallback onTapViewDetails;
+
+  const _RealtimeChartCard({
+    required this.history,
+    required this.activeTab,
+    required this.onTabChanged,
+    required this.onTapViewDetails,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final recent = history.take(15).toList().reversed.toList();
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: AppTheme.borderLight),
+        boxShadow: [
+          BoxShadow(
+            color: AppTheme.primaryDark.withValues(alpha: 0.04),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header & Mode Tabs
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'TREN GRAFIK REAL-TIME',
+                style: AppTheme.font(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  color: AppTheme.textSecondary,
+                  letterSpacing: 0.8,
+                ),
+              ),
+              GestureDetector(
+                onTap: onTapViewDetails,
+                child: Text(
+                  'Lihat Semua →',
+                  style: AppTheme.font(fontSize: 11, fontWeight: FontWeight.w600, color: AppTheme.primaryDark),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+
+          // 3-Toggle Tabs (Partikulat, Gas & Suhu, Kecepatan Angin)
+          Container(
+            padding: const EdgeInsets.all(3),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF3F4F6),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Row(
+              children: [
+                _TabButton(
+                  title: 'Partikulat (PM)',
+                  isSelected: activeTab == 0,
+                  onTap: () => onTabChanged(0),
+                ),
+                _TabButton(
+                  title: 'Gas & Suhu',
+                  isSelected: activeTab == 1,
+                  onTap: () => onTabChanged(1),
+                ),
+                _TabButton(
+                  title: 'Kec. Angin',
+                  isSelected: activeTab == 2,
+                  onTap: () => onTabChanged(2),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // Chart Legends
+          if (activeTab == 0) ...[
+            Row(
+              children: const [
+                _ChartLegendDot(color: Color(0xFF3B82F6), label: 'PM 1.0'),
+                SizedBox(width: 14),
+                _ChartLegendDot(color: Color(0xFFEF4444), label: 'PM 2.5'),
+                SizedBox(width: 14),
+                _ChartLegendDot(color: Color(0xFFF59E0B), label: 'PM 10'),
+              ],
+            ),
+          ] else if (activeTab == 1) ...[
+            Row(
+              children: const [
+                _ChartLegendDot(color: Color(0xFF8B5CF6), label: 'CO₂'),
+                SizedBox(width: 14),
+                _ChartLegendDot(color: Color(0xFFEF4444), label: 'Suhu (°C)'),
+                SizedBox(width: 14),
+                _ChartLegendDot(color: Color(0xFF06B6D4), label: 'Lembab (%)'),
+              ],
+            ),
+          ] else ...[
+            Row(
+              children: const [
+                _ChartLegendDot(color: Color(0xFF10B981), label: 'Kecepatan Angin (m/s)'),
+              ],
+            ),
+          ],
+          const SizedBox(height: 16),
+
+          // Canvas Chart
+          SizedBox(
+            height: 130,
+            width: double.infinity,
+            child: CustomPaint(
+              painter: _MultiLineChartPainter(
+                data: recent,
+                mode: activeTab,
+              ),
+            ),
+          ),
+          const SizedBox(height: 10),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('Live Buffer (15)', style: AppTheme.font(fontSize: 10, color: AppTheme.textMuted)),
+              Text('Interval ~2000ms', style: AppTheme.font(fontSize: 10, fontWeight: FontWeight.w600, color: AppTheme.success)),
+              Text('Sekarang', style: AppTheme.font(fontSize: 10, color: AppTheme.textMuted)),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _TabButton extends StatelessWidget {
+  final String title;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _TabButton({required this.title, required this.isSelected, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: GestureDetector(
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          padding: const EdgeInsets.symmetric(vertical: 6),
+          decoration: BoxDecoration(
+            color: isSelected ? Colors.white : Colors.transparent,
+            borderRadius: BorderRadius.circular(13),
+            boxShadow: isSelected
+                ? [BoxShadow(color: Colors.black.withValues(alpha: 0.06), blurRadius: 4, offset: const Offset(0, 2))]
+                : null,
+          ),
+          child: Text(
+            title,
+            textAlign: TextAlign.center,
+            style: AppTheme.font(
+              fontSize: 11,
+              fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+              color: isSelected ? AppTheme.primaryDark : AppTheme.textSecondary,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ChartLegendDot extends StatelessWidget {
+  final Color color;
+  final String label;
+
+  const _ChartLegendDot({required this.color, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Container(
+          width: 8,
+          height: 8,
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+        ),
+        const SizedBox(width: 5),
+        Text(label, style: AppTheme.font(fontSize: 10, fontWeight: FontWeight.w600, color: AppTheme.primaryDark)),
+      ],
+    );
+  }
+}
+
+class _MultiLineChartPainter extends CustomPainter {
+  final List<SensorData> data;
+  final int mode; // 0: PM, 1: Gas/Suhu, 2: Angin
+
+  _MultiLineChartPainter({required this.data, required this.mode});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (data.isEmpty) return;
+
+    // Grid lines
+    final gridPaint = Paint()
+      ..color = const Color(0xFFE5E7EB)
+      ..strokeWidth = 0.8;
+
+    for (int i = 0; i <= 3; i++) {
+      final y = size.height * (i / 3);
+      canvas.drawLine(Offset(0, y), Offset(size.width, y), gridPaint);
+    }
+
+    final double stepX = size.width / (data.length > 1 ? data.length - 1 : 1);
+
+    if (mode == 0) {
+      // PM1, PM2.5, PM10
+      _drawLine(canvas, size, stepX, data.map((e) => e.pm1).toList(), const Color(0xFF3B82F6), 0, 80);
+      _drawLine(canvas, size, stepX, data.map((e) => e.pm25).toList(), const Color(0xFFEF4444), 0, 80);
+      _drawLine(canvas, size, stepX, data.map((e) => e.pm10).toList(), const Color(0xFFF59E0B), 0, 80);
+    } else if (mode == 1) {
+      // CO2 (scaled), Temp, Humidity
+      _drawLine(canvas, size, stepX, data.map((e) => e.temperature).toList(), const Color(0xFFEF4444), 10, 40);
+      _drawLine(canvas, size, stepX, data.map((e) => e.humidity).toList(), const Color(0xFF06B6D4), 40, 100);
+      _drawLine(canvas, size, stepX, data.map((e) => e.co2 / 10).toList(), const Color(0xFF8B5CF6), 30, 100);
+    } else {
+      // Wind speed
+      _drawLine(canvas, size, stepX, data.map((e) => e.windSpeed).toList(), const Color(0xFF10B981), 0, 5);
+    }
+  }
+
+  void _drawLine(Canvas canvas, Size size, double stepX, List<double> values, Color color, double min, double max) {
+    if (values.isEmpty) return;
+    final range = (max - min) == 0 ? 1.0 : (max - min);
+
+    final path = Path();
+    for (int i = 0; i < values.length; i++) {
+      final x = i * stepX;
+      final norm = ((values[i] - min) / range).clamp(0.0, 1.0);
+      final y = size.height - (norm * (size.height - 16)) - 8;
+
+      if (i == 0) {
+        path.moveTo(x, y);
+      } else {
+        path.lineTo(x, y);
+      }
+    }
+
+    final paint = Paint()
+      ..color = color
+      ..strokeWidth = 2.2
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant _MultiLineChartPainter oldDelegate) {
+    return oldDelegate.data != data || oldDelegate.mode != mode;
+  }
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+// Card 6: DETAIL PERANGKAT
+// ──────────────────────────────────────────────────────────────────────────────
+
+class _DeviceDetailCard extends StatelessWidget {
+  final bool isMqttConnected;
+  final VoidCallback onTapMore;
+
+  const _DeviceDetailCard({required this.isMqttConnected, required this.onTapMore});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: AppTheme.borderLight),
+        boxShadow: [
+          BoxShadow(
+            color: AppTheme.primaryDark.withValues(alpha: 0.04),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'DETAIL PERANGKAT',
+                style: AppTheme.font(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  color: AppTheme.textSecondary,
+                  letterSpacing: 0.8,
+                ),
+              ),
+              GestureDetector(
+                onTap: onTapMore,
+                child: Text(
+                  'Selengkapnya →',
+                  style: AppTheme.font(fontSize: 11, fontWeight: FontWeight.w600, color: AppTheme.primaryDark),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          _DeviceFieldRow(label: 'Lokasi:', value: 'TPS Brakseng'),
+          _DeviceFieldRow(label: 'Arsitektur:', value: 'ESP32 Dual-Core (FreeRTOS)'),
+          _DeviceFieldRow(label: 'Pembagian Core:', value: 'Core 0: MQTT/OTA | Core 1: Sensors'),
+          _DeviceFieldRow(label: 'Server Host:', value: 'b846d696536846c98fd9152...'),
+          _DeviceFieldRow(label: 'Interval Baca:', value: '2000 ms'),
+          _DeviceFieldRow(label: 'MQTT Session:', value: 'Clean Session'),
+        ],
+      ),
+    );
+  }
+}
+
+class _DeviceFieldRow extends StatelessWidget {
+  final String label;
+  final String value;
+
+  const _DeviceFieldRow({required this.label, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: AppTheme.font(fontSize: 11, color: AppTheme.textSecondary)),
+          Flexible(
+            child: Text(
+              value,
+              style: AppTheme.font(fontSize: 11, fontWeight: FontWeight.w700, color: AppTheme.primaryDark),
+              textAlign: TextAlign.right,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -413,721 +1370,12 @@ class _DetailRow extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(label, style: AppTheme.font(fontSize: 12, color: AppTheme.textSecondary)),
-          Text(value, style: AppTheme.font(fontSize: 12, fontWeight: FontWeight.w600, color: AppTheme.primaryDark)),
-        ],
-      ),
-    );
-  }
-}
-
-// ──────────────────────────────────────────────────────────────────────────────
-// Location Pill Widget
-// ──────────────────────────────────────────────────────────────────────────────
-
-class _LocationPill extends StatelessWidget {
-  const _LocationPill();
-
-  @override
-  Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(30),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.85),
-            borderRadius: BorderRadius.circular(30),
-            border: Border.all(
-              color: Colors.white,
-              width: 1.2,
+          Flexible(
+            child: Text(
+              value,
+              style: AppTheme.font(fontSize: 12, fontWeight: FontWeight.w600, color: AppTheme.primaryDark),
+              textAlign: TextAlign.right,
             ),
-            boxShadow: [
-              BoxShadow(
-                color: AppTheme.primaryDark.withValues(alpha: 0.06),
-                blurRadius: 12,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(
-                Icons.location_on_rounded,
-                color: AppTheme.primaryDark,
-                size: 15,
-              ),
-              const SizedBox(width: 5),
-              Text(
-                'TPS3R Brakseng, Batu',
-                style: AppTheme.font(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
-                  color: AppTheme.primaryDark,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-// ──────────────────────────────────────────────────────────────────────────────
-// Hero Card
-// ──────────────────────────────────────────────────────────────────────────────
-
-class _HeroCard extends StatelessWidget {
-  final double pm1Value;
-  final int pm25Value;
-  final double pm10Value;
-  final String statusLabel;
-  final Color statusColor;
-  final bool isCritical;
-  final bool isWarning;
-  final String temp;
-  final String humid;
-  final String wind;
-  final bool isLive;
-
-  const _HeroCard({
-    required this.pm1Value,
-    required this.pm25Value,
-    required this.pm10Value,
-    required this.statusLabel,
-    required this.statusColor,
-    required this.isCritical,
-    required this.isWarning,
-    required this.temp,
-    required this.humid,
-    required this.wind,
-    required this.isLive,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(28),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-        child: Container(
-          padding: const EdgeInsets.all(22),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                Colors.white.withValues(alpha: 0.95),
-                AppTheme.mintContainer.withValues(alpha: 0.45),
-              ],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            borderRadius: BorderRadius.circular(28),
-            border: Border.all(
-              color: Colors.white,
-              width: 1.5,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: AppTheme.primaryDark.withValues(alpha: 0.07),
-                blurRadius: 24,
-                offset: const Offset(0, 8),
-              ),
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Top Row: Category + Status Pill
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        width: 7,
-                        height: 7,
-                        decoration: BoxDecoration(
-                          color: isLive ? AppTheme.success : AppTheme.textMuted,
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                      const SizedBox(width: 6),
-                      Text(
-                        isLive ? 'LIVE MONITOR · PM2.5' : 'OFFLINE SNAPSHOT · PM2.5',
-                        style: AppTheme.font(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w700,
-                          color: AppTheme.textSecondary,
-                          letterSpacing: 0.8,
-                        ),
-                      ),
-                    ],
-                  ),
-                  // Status pill
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-                    decoration: BoxDecoration(
-                      color: statusColor.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Container(
-                          width: 6,
-                          height: 6,
-                          decoration: BoxDecoration(
-                            color: statusColor,
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                        const SizedBox(width: 5),
-                        Text(
-                          statusLabel.toUpperCase(),
-                          style: AppTheme.font(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w800,
-                            color: statusColor,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 14),
-
-              // Big Number + Sub-metrics
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    '$pm25Value',
-                    style: AppTheme.font(
-                      fontSize: 56,
-                      fontWeight: FontWeight.w800,
-                      color: AppTheme.primaryDark,
-                      height: 0.9,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: Text(
-                      'µg/m³',
-                      style: AppTheme.font(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: AppTheme.textSecondary,
-                      ),
-                    ),
-                  ),
-                  const Spacer(),
-                  // PM1.0 and PM10 sub-tags
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: AppTheme.borderLight),
-                        ),
-                        child: Text(
-                          'PM1.0: ${pm1Value.toStringAsFixed(1)} µg/m³',
-                          style: AppTheme.font(fontSize: 11, fontWeight: FontWeight.w600, color: AppTheme.primaryDark),
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: AppTheme.borderLight),
-                        ),
-                        child: Text(
-                          'PM10: ${pm10Value.toStringAsFixed(1)} µg/m³',
-                          style: AppTheme.font(fontSize: 11, fontWeight: FontWeight.w600, color: AppTheme.primaryDark),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-              const SizedBox(height: 18),
-
-              // Divider
-              Divider(color: AppTheme.primaryDark.withValues(alpha: 0.08), height: 1),
-              const SizedBox(height: 14),
-
-              // Bottom Stats: Temp, Humid, Wind
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  _HeroStat(icon: Icons.thermostat_rounded, label: 'Suhu', value: '$temp°C'),
-                  _HeroStat(icon: Icons.water_drop_outlined, label: 'Kelembaban', value: humid),
-                  _HeroStat(icon: Icons.air_rounded, label: 'Kecepatan', value: wind),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _HeroStat extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final String value;
-
-  const _HeroStat({required this.icon, required this.label, required this.value});
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Icon(icon, size: 16, color: AppTheme.primaryDark),
-        const SizedBox(width: 6),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(label, style: AppTheme.font(fontSize: 10, color: AppTheme.textSecondary)),
-            Text(value, style: AppTheme.font(fontSize: 13, fontWeight: FontWeight.w700, color: AppTheme.primaryDark)),
-          ],
-        ),
-      ],
-    );
-  }
-}
-
-// ──────────────────────────────────────────────────────────────────────────────
-// Highlight Card
-// ──────────────────────────────────────────────────────────────────────────────
-
-class _HighlightCard extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final String value;
-  final Color valueColor;
-  final String subtitle;
-  final Color accentColor;
-  final bool isSpinning;
-
-  const _HighlightCard({
-    required this.icon,
-    required this.title,
-    required this.value,
-    required this.valueColor,
-    required this.subtitle,
-    required this.accentColor,
-    required this.isSpinning,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppTheme.borderLight),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.02),
-            blurRadius: 10,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Container(
-                width: 38,
-                height: 38,
-                decoration: BoxDecoration(
-                  color: accentColor,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(icon, color: AppTheme.primaryDark, size: 20),
-              ),
-              if (isSpinning)
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: AppTheme.success.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    'RUNNING',
-                    style: AppTheme.font(fontSize: 9, fontWeight: FontWeight.w800, color: AppTheme.success),
-                  ),
-                ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Text(
-            title,
-            style: AppTheme.font(fontSize: 11, color: AppTheme.textSecondary),
-          ),
-          const SizedBox(height: 2),
-          Text(
-            value,
-            style: AppTheme.font(fontSize: 18, fontWeight: FontWeight.w800, color: valueColor),
-          ),
-          Text(
-            subtitle,
-            style: AppTheme.font(fontSize: 11, color: AppTheme.textSecondary),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// ──────────────────────────────────────────────────────────────────────────────
-// Wind Compass Card
-// ──────────────────────────────────────────────────────────────────────────────
-
-class _WindCompassCard extends StatelessWidget {
-  final double windSpeed;
-  final int windDir;
-  final String windDirLabel;
-
-  const _WindCompassCard({
-    required this.windSpeed,
-    required this.windDir,
-    required this.windDirLabel,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final double angleRad = (windDir * math.pi) / 180.0;
-
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppTheme.borderLight),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.02),
-            blurRadius: 10,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          // Visual Compass Rose
-          Stack(
-            alignment: Alignment.center,
-            children: [
-              Container(
-                width: 68,
-                height: 68,
-                decoration: BoxDecoration(
-                  color: AppTheme.mintContainer.withValues(alpha: 0.5),
-                  shape: BoxShape.circle,
-                  border: Border.all(color: AppTheme.borderLight, width: 1.5),
-                ),
-                child: Center(
-                  child: Text(
-                    'U',
-                    style: AppTheme.font(fontSize: 10, fontWeight: FontWeight.w800, color: AppTheme.primaryDark),
-                  ),
-                ),
-              ),
-              // Needle pointing to wind direction
-              Transform.rotate(
-                angle: angleRad,
-                child: SizedBox(
-                  width: 68,
-                  height: 68,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.navigation_rounded, size: 24, color: AppTheme.primaryDark),
-                      const SizedBox(height: 18),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(width: 16),
-
-          // Details
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Arah & Kecepatan Angin',
-                  style: AppTheme.font(fontSize: 12, fontWeight: FontWeight.w600, color: AppTheme.textSecondary),
-                ),
-                const SizedBox(height: 4),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.baseline,
-                  textBaseline: TextBaseline.alphabetic,
-                  children: [
-                    Text(
-                      '${windSpeed.toStringAsFixed(2)} m/s',
-                      style: AppTheme.font(fontSize: 20, fontWeight: FontWeight.w800, color: AppTheme.primaryDark),
-                    ),
-                    const SizedBox(width: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: AppTheme.mintContainer,
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Text(
-                        '$windDir° $windDirLabel',
-                        style: AppTheme.font(fontSize: 11, fontWeight: FontWeight.w700, color: AppTheme.primaryDark),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  'Mendukung analisis penyebaran aroma & partikel',
-                  style: AppTheme.font(fontSize: 10, color: AppTheme.textSecondary),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// ──────────────────────────────────────────────────────────────────────────────
-// Realtime Mini Chart Card (15 points)
-// ──────────────────────────────────────────────────────────────────────────────
-
-class _RealtimeMiniChart extends StatelessWidget {
-  final List<SensorData> history;
-  final VoidCallback onTapViewAll;
-
-  const _RealtimeMiniChart({required this.history, required this.onTapViewAll});
-
-  @override
-  Widget build(BuildContext context) {
-    final recent = history.take(15).toList();
-    final points = recent.map((e) => e.pm25).toList().reversed.toList();
-
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppTheme.borderLight),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.02),
-            blurRadius: 10,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                children: [
-                  const Icon(Icons.show_chart_rounded, size: 18, color: AppTheme.primaryDark),
-                  const SizedBox(width: 6),
-                  Text(
-                    'Grafik Real-Time (15 Titik)',
-                    style: AppTheme.font(fontSize: 13, fontWeight: FontWeight.w700, color: AppTheme.primaryDark),
-                  ),
-                ],
-              ),
-              GestureDetector(
-                onTap: onTapViewAll,
-                child: Text(
-                  'Lihat Tren →',
-                  style: AppTheme.font(fontSize: 12, fontWeight: FontWeight.w600, color: AppTheme.primaryDark),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 14),
-
-          // Mini line canvas
-          SizedBox(
-            height: 90,
-            width: double.infinity,
-            child: points.isEmpty
-                ? Center(child: Text('Menunggu data...', style: AppTheme.font(fontSize: 11, color: AppTheme.textMuted)))
-                : CustomPaint(
-                    painter: _MiniSparklinePainter(
-                      points: points,
-                      lineColor: AppTheme.primaryDark,
-                    ),
-                  ),
-          ),
-          const SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text('15 sampling lalu', style: AppTheme.font(fontSize: 9, color: AppTheme.textMuted)),
-              Text('Live MQTT (~2s)', style: AppTheme.font(fontSize: 9, fontWeight: FontWeight.w600, color: AppTheme.success)),
-              Text('Sekarang', style: AppTheme.font(fontSize: 9, color: AppTheme.textMuted)),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _MiniSparklinePainter extends CustomPainter {
-  final List<double> points;
-  final Color lineColor;
-
-  _MiniSparklinePainter({required this.points, required this.lineColor});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    if (points.isEmpty) return;
-
-    final double min = points.reduce((a, b) => a < b ? a : b);
-    final double max = points.reduce((a, b) => a > b ? a : b);
-    final double range = (max - min) == 0 ? 1.0 : (max - min);
-
-    final stepX = size.width / (points.length > 1 ? points.length - 1 : 1);
-
-    final path = Path();
-    for (int i = 0; i < points.length; i++) {
-      final x = i * stepX;
-      final norm = (points[i] - min) / range;
-      final y = size.height - (norm * (size.height - 16)) - 8;
-
-      if (i == 0) {
-        path.moveTo(x, y);
-      } else {
-        path.lineTo(x, y);
-      }
-    }
-
-    final paint = Paint()
-      ..color = lineColor
-      ..strokeWidth = 2.0
-      ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.round
-      ..strokeJoin = StrokeJoin.round;
-
-    canvas.drawPath(path, paint);
-
-    // Latest dot
-    if (points.isNotEmpty) {
-      final lastX = (points.length - 1) * stepX;
-      final lastNorm = (points.last - min) / range;
-      final lastY = size.height - (lastNorm * (size.height - 16)) - 8;
-
-      canvas.drawCircle(Offset(lastX, lastY), 4, Paint()..color = AppTheme.success);
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant _MiniSparklinePainter oldDelegate) {
-    return oldDelegate.points != points;
-  }
-}
-
-// ──────────────────────────────────────────────────────────────────────────────
-// Hardware Specs Card
-// ──────────────────────────────────────────────────────────────────────────────
-
-class _HardwareSpecsCard extends StatelessWidget {
-  final bool isMqttConnected;
-  final DateTime measuredAt;
-  final VoidCallback onTapDetails;
-
-  const _HardwareSpecsCard({
-    required this.isMqttConnected,
-    required this.measuredAt,
-    required this.onTapDetails,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppTheme.borderLight),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'INFORMASI TELEMETRI PERANGKAT',
-                style: AppTheme.font(fontSize: 10, fontWeight: FontWeight.w700, color: AppTheme.textSecondary, letterSpacing: 0.8),
-              ),
-              GestureDetector(
-                onTap: onTapDetails,
-                child: Text(
-                  'Detail →',
-                  style: AppTheme.font(fontSize: 11, fontWeight: FontWeight.w600, color: AppTheme.primaryDark),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              _TeleItem(label: 'Node', value: 'ESP32 Dual-Core'),
-              _TeleItem(label: 'OS', value: 'FreeRTOS'),
-              _TeleItem(label: 'Sampling', value: '~2000 ms'),
-              _TeleItem(label: 'Broker', value: 'HiveMQ TLS'),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _TeleItem extends StatelessWidget {
-  final String label;
-  final String value;
-
-  const _TeleItem({required this.label, required this.value});
-
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(label, style: AppTheme.font(fontSize: 10, color: AppTheme.textSecondary)),
-          const SizedBox(height: 2),
-          Text(
-            value,
-            style: AppTheme.font(fontSize: 11, fontWeight: FontWeight.w700, color: AppTheme.primaryDark),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
           ),
         ],
       ),
