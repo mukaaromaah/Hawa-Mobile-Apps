@@ -8,14 +8,16 @@
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:hawa_mobile/main.dart';
+import 'package:hawa_mobile/screens/main_screen.dart';
 
 void main() {
   testWidgets('Counter increments smoke test', (WidgetTester tester) async {
     // Build our app and trigger a frame.
     await tester.pumpWidget(const HawaApp());
 
-    // Verify that our app renders title
-    expect(find.text('Hawa'), findsOneWidget);
+    // Verify that our app renders MainScreen and Brakseng location
+    expect(find.byType(MainScreen), findsOneWidget);
+    expect(find.textContaining('Brakseng'), findsWidgets);
 
     // Settle simulation timer
     await tester.pump(const Duration(seconds: 4));

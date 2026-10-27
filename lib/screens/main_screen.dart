@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hawa_mobile/screens/home_screen.dart';
-import 'package:hawa_mobile/screens/zones_screen.dart';
-import 'package:hawa_mobile/screens/alerts_screen.dart';
 import 'package:hawa_mobile/screens/history_screen.dart';
-import 'package:hawa_mobile/screens/nodes_screen.dart';
+import 'package:hawa_mobile/screens/log_data_screen.dart';
 import 'package:hawa_mobile/theme/app_theme.dart';
 
 class MainScreen extends StatefulWidget {
@@ -16,17 +14,13 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
   int _selectedIndex = 0;
-  // Alert badge: shown on Alerts tab (index 2) until user visits it
-  bool _hasUnreadAlert = true;
 
   late final List<Widget> _screens;
 
   final List<({IconData icon, IconData activeIcon, String label})> _navItems = [
-    (icon: Icons.home_outlined, activeIcon: Icons.home_rounded, label: 'Home'),
-    (icon: Icons.grid_view_outlined, activeIcon: Icons.grid_view_rounded, label: 'Zones'),
-    (icon: Icons.notifications_outlined, activeIcon: Icons.notifications_rounded, label: 'Alerts'),
-    (icon: Icons.show_chart_outlined, activeIcon: Icons.show_chart, label: 'History'),
-    (icon: Icons.wifi_tethering_outlined, activeIcon: Icons.wifi_tethering, label: 'Nodes'),
+    (icon: Icons.sensors_outlined, activeIcon: Icons.sensors_rounded, label: 'Monitor'),
+    (icon: Icons.insights_outlined, activeIcon: Icons.insights_rounded, label: 'Tren'),
+    (icon: Icons.table_chart_outlined, activeIcon: Icons.table_chart_rounded, label: 'Log Data'),
   ];
 
   @override
@@ -34,10 +28,8 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     super.initState();
     _screens = [
       HomeScreen(onNavigateToTab: _onItemTapped),
-      const ZonesScreen(),
-      const AlertsScreen(),
       const HistoryScreen(),
-      const NodesScreen(),
+      const LogDataScreen(),
     ];
   }
 
@@ -45,10 +37,6 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     HapticFeedback.selectionClick();
     setState(() {
       _selectedIndex = index;
-      // Clear alert badge when user visits Alerts tab
-      if (index == 2 && _hasUnreadAlert) {
-        _hasUnreadAlert = false;
-      }
     });
   }
 
@@ -57,14 +45,17 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     return Scaffold(
       backgroundColor: AppTheme.background,
       extendBody: false,
-      body: _screens[_selectedIndex],
+      body: IndexedStack(
+        index: _selectedIndex,
+        children: _screens,
+      ),
       bottomNavigationBar: _buildFloatingPillDock(),
     );
   }
 
   Widget _buildFloatingPillDock() {
     return Container(
-      padding: const EdgeInsets.only(left: 20, right: 20, bottom: 28, top: 10),
+      padding: const EdgeInsets.only(left: 36, right: 36, bottom: 28, top: 8),
       color: Colors.transparent,
       child: Container(
         height: 64,
@@ -80,12 +71,10 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
           ],
         ),
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: List.generate(_navItems.length, (index) {
             final item = _navItems[index];
             final isSelected = _selectedIndex == index;
-            // Show badge on Alerts tab (index 2) when unread
-            final showBadge = index == 2 && _hasUnreadAlert;
 
             return MouseRegion(
               cursor: SystemMouseCursors.click,
@@ -96,49 +85,33 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                   duration: const Duration(milliseconds: 200),
                   curve: Curves.easeOut,
                   padding: EdgeInsets.symmetric(
-                    horizontal: isSelected ? 14 : 10,
+                    horizontal: isSelected ? 18 : 12,
                     vertical: 9,
                   ),
                   decoration: BoxDecoration(
-                    color: isSelected ? AppTheme.accentGreen : Colors.transparent,
-                    borderRadius: BorderRadius.circular(30),
+                    color: isSelected
+                        ? Colors.white.withValues(alpha: 0.16)
+                        : Colors.transparent,
+                    borderRadius: BorderRadius.circular(24),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Stack(
-                        clipBehavior: Clip.none,
-                        children: [
-                          Icon(
-                            isSelected ? item.activeIcon : item.icon,
-                            color: isSelected
-                                ? AppTheme.primaryDark
-                                : Colors.white.withValues(alpha: 0.5),
-                            size: 22,
-                          ),
-                          if (showBadge)
-                            Positioned(
-                              top: -3,
-                              right: -3,
-                              child: Container(
-                                width: 8,
-                                height: 8,
-                                decoration: const BoxDecoration(
-                                  color: AppTheme.error,
-                                  shape: BoxShape.circle,
-                                ),
-                              ),
-                            ),
-                        ],
+                      Icon(
+                        isSelected ? item.activeIcon : item.icon,
+                        color: isSelected
+                            ? const Color(0xFF5EEAD4) // mint accent
+                            : Colors.white.withValues(alpha: 0.5),
+                        size: 22,
                       ),
                       if (isSelected) ...[
-                        const SizedBox(width: 6),
+                        const SizedBox(width: 8),
                         Text(
                           item.label,
                           style: AppTheme.font(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            color: AppTheme.primaryDark,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
                           ),
                         ),
                       ],
