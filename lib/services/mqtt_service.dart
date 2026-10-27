@@ -38,8 +38,7 @@ class MqttService {
     final connMess = MqttConnectMessage()
         .withClientIdentifier(clientId)
         .authenticateAs(username, password)
-        .startClean()
-        .withWillQos(MqttQos.atLeastOnce);
+        .startClean();
     _client!.connectionMessage = connMess;
 
     try {

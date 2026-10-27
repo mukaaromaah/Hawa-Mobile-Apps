@@ -96,28 +96,33 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'TPA BRAKSENG MONITOR',
-                                style: AppTheme.font(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w800,
-                                  color: AppTheme.primaryDark,
-                                  letterSpacing: 0.5,
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'TPA BRAKSENG MONITOR',
+                                  style: AppTheme.font(
+                                    fontSize: 17,
+                                    fontWeight: FontWeight.w800,
+                                    color: AppTheme.primaryDark,
+                                    letterSpacing: 0.5,
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(height: 2),
-                              Text(
-                                'Stasiun Pemantauan Kualitas Udara & Lingkungan IoT',
-                                style: AppTheme.font(
-                                  fontSize: 11,
-                                  color: AppTheme.textSecondary,
+                                const SizedBox(height: 2),
+                                Text(
+                                  'Stasiun Pemantauan Kualitas Udara & Lingkungan',
+                                  style: AppTheme.font(
+                                    fontSize: 11,
+                                    color: AppTheme.textSecondary,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
+                          const SizedBox(width: 8),
                           // Actions: Bell & Avatar
                           Row(
                             children: [
