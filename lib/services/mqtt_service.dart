@@ -34,6 +34,7 @@ class MqttService {
     _client!.autoReconnect = true;
     _client!.onDisconnected = _onDisconnected;
     _client!.onConnected = _onConnected;
+    _client!.setProtocolV311();
 
     final connMess = MqttConnectMessage()
         .withClientIdentifier(clientId)
